@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/JuanDaCalderon/STOCK_API#readme",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.2",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",

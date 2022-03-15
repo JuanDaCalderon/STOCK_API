@@ -58,7 +58,8 @@ User.init({
     },
     fecha_ingreso: {
         type: DataTypes.DATE,
-        allowNull: false
+        allowNull: false,
+        defaultValue: DataTypes.NOW
     },
     fecha_salida: {
         type: DataTypes.DATE,
@@ -67,7 +68,9 @@ User.init({
 }, {
     sequelize,
     timestamps: false,
-    tableName: 'users'
+    tableName: 'users',
+    charset: 'utf8mb4',
+    collate: 'utf8mb4_unicode_ci',
 });
 
 User.belongsTo(Sucursales, {foreignKey: 'sucursal_id'});

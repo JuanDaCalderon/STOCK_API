@@ -55,7 +55,9 @@ Producto.init({
 }, {
     sequelize,
     timestamps: false,
-    tableName: 'productos'
+    tableName: 'productos',
+    charset: 'utf8mb4',
+    collate: 'utf8mb4_unicode_ci',
 });
 
 Producto.belongsTo(Sucursales, {foreignKey: 'sucursal_id'});

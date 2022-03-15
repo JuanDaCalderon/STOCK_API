@@ -30,7 +30,9 @@ Sucursal.init({
 }, {
     sequelize,
     timestamps: false,
-    tableName: 'sucursales'
+    tableName: 'sucursales',
+    charset: 'utf8mb4',
+    collate: 'utf8mb4_unicode_ci',
 });
 
 module.exports = Sucursal;

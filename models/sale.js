@@ -34,7 +34,9 @@ ventaProducto.init({
         name: 'fk_venta_producto_ref',
         unique: 'BTREE',
         fields: ['venta_producto_ref_key']
-    }]
+    }],
+    charset: 'utf8mb4',
+    collate: 'utf8mb4_unicode_ci',
 });
 
 ventaProducto.belongsTo(Productos, {foreignKey: 'producto_id'});
@@ -84,7 +86,9 @@ ventasTotal.init({
 }, {
     sequelize,
     timestamps: false,
-    tableName: 'ventastotal'
+    tableName: 'ventastotal',
+    charset: 'utf8mb4',
+    collate: 'utf8mb4_unicode_ci',
 });
 
 ventasTotal.belongsTo(Users, {foreignKey: 'user_id'});
