@@ -1,4 +1,4 @@
-# STOCK app
+# STOCK APP
 
 ## Install
 

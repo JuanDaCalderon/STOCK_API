@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS sucursales(
     direccion VARCHAR(255) NOT NULL,
     telefono VARCHAR(255),
     activa BOOLEAN NOT NULL,
-    PRIMARY KEY (id)	
+    PRIMARY KEY (id)
 );
 CREATE TABLE IF NOT EXISTS users(
 	id INT NOT NULL AUTO_INCREMENT,
@@ -79,19 +79,19 @@ ALTER TABLE ventastotal ADD INDEX fk_venta_total_producto_ref (venta_producto_re
 ALTER TABLE ventastotal ADD CONSTRAINT fk_venta_producto_ref FOREIGN KEY (venta_producto_ref) REFERENCES ventaproductos(venta_producto_ref_key) ON DELETE RESTRICT ON UPDATE RESTRICT;
 #<----------------- /CREAR LA BASE DE DATOS CON SUS RESPECTIVAS TABLAS Y RELACIONES ---------->
 #<----------------- INSERTA REGISTROS DE PRUEBA A LAS TABLAS ---------->
-INSERT INTO sucursales (nombre, direccion, telefono, activa) VALUES 
+INSERT INTO sucursales (nombre, direccion, telefono, activa) VALUES
 ('Cedritos', 'Calle 120 con Boyaca', '2650275', TRUE),
 ('Kennedy', 'Calle 78 con Av Primera de Mayo', '7596345', TRUE);
 INSERT INTO users (sucursal_id, cedula, correo, celular, contraseña, nombre, genero, cargo, administrador, activo, fecha_nacimiento, fecha_ingreso, fecha_salida) VALUES 
 (1,'1030695338', 'juandacalji@gmail.com', '3124066540', '123456', 'Juan Calderon', 'M', 'Vendedor', TRUE, TRUE, '1999-03-30', '2022-03-02', NULL),
 (2,'245475632', 'user02@gmail.com', '314657895', '123456', 'Pepito Perez', 'M', 'Administrador', TRUE, TRUE, '1998-05-12', '2021-12-18', NULL),
 (1,'7894564445', 'user03@gmail.com', '3168597841', '123456', 'Maria Garcia', 'F', 'Vendedor', FALSE, TRUE, '1999-09-01', '2021-11-13', NULL);
-INSERT INTO productos (nombre, descripcion, cantidad, marca, talla, categoria, sucursal_id, referencia, precio_minimo, disponible) VALUES 
+INSERT INTO productos (nombre, descripcion, cantidad, marca, talla, categoria, sucursal_id, referencia, precio_minimo, disponible) VALUES
 ('Camiseta blanca', 'Camiseta blanca manga corta', '5', 'Polo', 'M', 'Camiseta', 1, '231', '60000', TRUE),
 ('Camiseta negra', 'Camiseta negra manga corta', '4', 'Polo', 'S', 'Camiseta', 2, '230', '50000', TRUE);
-INSERT INTO ventaproductos (venta_producto_ref_key, producto_id, precio_vendido) VALUES 
+INSERT INTO ventaproductos (venta_producto_ref_key, producto_id, precio_vendido) VALUES
 (1, 1, '70000'), (1, 1, '75000'), (1, 2, '65000'), (2, 2, '66000'), (2, 1, '55000');
-INSERT INTO ventastotal (user_id, venta_producto_ref, sucursal_id, fecha, forma_pago, nombre_cliente, correo_cliente, total) VALUES 
+INSERT INTO ventastotal (user_id, venta_producto_ref, sucursal_id, fecha, forma_pago, nombre_cliente, correo_cliente, total) VALUES
 (1, 1, 1, '2022-03-04', 'Nequi', 'Jorge', 'jorge@gmail.com', '147000'),
 (3, 2, 2, '2022-03-03', 'Efectivo', 'Maria', 'maria@gmail.com', '121000');
 #<----------------- /INSERTA REGISTROS DE PRUEBA A LAS TABLAS ---------->
