@@ -18,6 +18,8 @@ git clone https://github.com/JuanDaCalderon/STOCK_API.git
 Create a new data base
 ```
 CREATE DATABASE IF NOT EXISTS stock DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+You also can Execute "MAINdataBaseCreation.sql" in mysql workbench to create the data base
 ```
 
 ### Node.js
