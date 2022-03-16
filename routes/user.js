@@ -25,7 +25,10 @@ router.put('/usuario', userController.resetUser);
 // 6. EDIT A USER: PUT - http://localhost:9000/usuario/:id
 router.put('/usuario/:userId', userController.editUser);
 
+// 7. DELEATE A USER: DELETE - http://localhost:9000/usuario/:id
+router.delete('/usuario/:userId', userController.deleteUser);
+
 module.exports = router;
 
-// 7. DELEATE A USER: DELETE - http://localhost:9000/usuario/:id
+
 

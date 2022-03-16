@@ -67,20 +67,22 @@ exports.createUser = async (req, res, next) => {
             fecha_salida: null
         }
         const users = await User.findAll();
+        const branch = await Branch.findAll();
         if (users == null || users == undefined || users.length <= 0) {
-            const createdBranch = await Branch.create({
-                nombre: "cambiame",
-                direccion: "cambiame",
-                telefono: "1234567",
-                activa: true
-            });
-            if (createdBranch) {
-                const response = await User.create(userData);
-                res.status(201).json({
-                    message: 'usuario creado satisfactoriamente (La contraseña debe ser cambiada por el usuario)',
-                    response: response
+            if(branch == null || branch == undefined || branch.length <= 0){
+                await Branch.create({
+                    nombre: "cambiame",
+                    direccion: "cambiame",
+                    telefono: "1234567",
+                    activa: true
                 });
             }
+            const response = await User.create(userData);
+            res.status(201).json({
+                message: 'usuario creado satisfactoriamente (La contraseña debe ser cambiada por el usuario)',
+                response: response
+            });
+
         } else {
             const response = await User.create(userData);
             res.status(201).json({
@@ -200,5 +202,25 @@ exports.editUser = async(req, res, next) => {
                 });
             }
         }
+    }
+}
+
+exports.deleteUser = async(req, res, next) => {
+    const userId = req.params.userId;
+    const user = await User.findByPk(userId);
+    if (user) {
+        const response = await user.destroy();
+        if ( response ) {
+            res.status(200).json({
+                message: "Usuario Correctamente eliminado",
+                response: response
+            });
+        }
+    }
+    else{
+        res.status(404).json({
+            message: "No coincide ningun usuario con este id",
+            response: user
+        });
     }
 }
