@@ -22,7 +22,10 @@ router.post('/auth', userController.authUser);
 // 5. PASSWORD RECOVERY: PUT - http://localhost:9000/usuario?reset=password
 router.put('/usuario', userController.resetUser);
 
+// 6. EDIT A USER: PUT - http://localhost:9000/usuario/:id
+router.put('/usuario/:userId', userController.editUser);
+
 module.exports = router;
 
-// 6. DELEATE A USER: DELETE - http://localhost:9000/usuario/:id
+// 7. DELEATE A USER: DELETE - http://localhost:9000/usuario/:id
 
