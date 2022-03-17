@@ -5,7 +5,12 @@ const Branch = require('../models/branch');
 const bcrypt = require('bcryptjs');
 
 exports.getUsers = async (req, res, next) => {
-    const users = await User.findAll();
+    const users = await User.findAll({
+        attributes: {
+            exclude: ['contraseña']
+        },
+        include: Branch
+    });
     if (users == null || users == undefined || users.length <= 0) {
         res.status(404).json({
             message: "No hay usuarios en la base de datos",
@@ -20,7 +25,12 @@ exports.getUsers = async (req, res, next) => {
 
 exports.getUser = async (req, res, next) => {
     const userId = req.params.userId;
-    const user = await User.findByPk(userId);
+    const user = await User.findByPk(userId, {
+        attributes: {
+            exclude: ['contraseña']
+        },
+        include: Branch
+    });
     if (user) {
         res.status(200).json({
             response: user
@@ -78,16 +88,30 @@ exports.createUser = async (req, res, next) => {
                 });
             }
             const response = await User.create(userData);
+            let userId = response.id;
+            const recentUser = await User.findByPk(userId, {
+                attributes: {
+                    exclude: ['contraseña']
+                },
+                include: Branch
+            });
             res.status(201).json({
                 message: 'usuario creado satisfactoriamente (La contraseña debe ser cambiada por el usuario)',
-                response: response
+                response: recentUser
             });
 
         } else {
             const response = await User.create(userData);
+            let userId = response.id;
+            const recentUser = await User.findByPk(userId, {
+                attributes: {
+                    exclude: ['contraseña']
+                },
+                include: Branch
+            });
             res.status(201).json({
                 message: 'usuario creado satisfactoriamente (La contraseña debe ser cambiada por el usuario)',
-                response: response
+                response: recentUser
             });
         }
     }
@@ -99,16 +123,19 @@ exports.authUser = async (req, res, next) => {
     const user = await User.findOne({
         where: {
             correo: email.toLowerCase()
-        }
+        },
+        include: Branch
     });
     if (user) {
         let authFlag
         if (password) {
             authFlag = await bcrypt.compare(password, user.contraseña);
             if (authFlag) {
+                let objResponse = {...user.dataValues};
+                delete objResponse.contraseña;
                 res.status(200).json({
                     message: "Inicio de sesión exitoso",
-                    response: user
+                    response: objResponse
                 });
             } else {
                 res.status(404).json({
@@ -124,7 +151,7 @@ exports.authUser = async (req, res, next) => {
             });
         }
     }
-    else{
+    else {
         res.status(404).json({
             message: "No existe ningún usuario registrado en la base de datos con este correo",
             response: user
@@ -174,10 +201,16 @@ exports.editUser = async(req, res, next) => {
         if ( UPDfechaNacimiento !== null && UPDfechaNacimiento !== undefined ) { user.fecha_nacimiento = UPDfechaNacimiento; }
         if ( UPDfechaSalida !== null && UPDfechaSalida !== undefined ) { user.fecha_salida = UPDfechaSalida; }
         const response = await user.save();
+        const recentUser = await User.findByPk(userId, {
+            attributes: {
+                exclude: ['contraseña']
+            },
+            include: Branch
+        });
         if( response ){
             res.status(201).json({
                 message: 'usuario Actualizado correctamente',
-                response: response
+                response: recentUser
             });
         }
         else{
@@ -190,12 +223,22 @@ exports.editUser = async(req, res, next) => {
 
 exports.deleteUser = async(req, res, next) => {
     const userId = req.params.userId;
-    const user = await User.findByPk(userId);
+    const user = await User.findByPk(userId, {
+        attributes: {
+            exclude: ['contraseña']
+        },
+        include: Branch
+    });
     if (user) {
-        const response = await user.destroy();
+        const response = await user.destroy({
+            attributes: {
+                exclude: ['contraseña']
+            },
+            include: Branch
+        });
         if ( response ) {
             res.status(200).json({
-                message: "Usuario Correctamente eliminado",
+                message: "Usuario eliminado correctamente",
                 response: response
             });
         }
