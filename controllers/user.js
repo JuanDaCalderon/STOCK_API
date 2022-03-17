@@ -102,15 +102,24 @@ exports.authUser = async (req, res, next) => {
         }
     });
     if (user) {
-        let authFlag = await bcrypt.compare(password, user.contraseña);
-        if (authFlag) {
-            res.status(200).json({
-                message: "Inicio de sesión exitoso",
-                response: user
-            });
-        } else {
+        let authFlag
+        if (password) {
+            authFlag = await bcrypt.compare(password, user.contraseña);
+            if (authFlag) {
+                res.status(200).json({
+                    message: "Inicio de sesión exitoso",
+                    response: user
+                });
+            } else {
+                res.status(404).json({
+                    message: "Contraseña incorrecta, intente de nuevo",
+                    response: user.correo
+                });
+            }
+        }
+        else{
             res.status(404).json({
-                message: "Contraseña incorrecta, intente de nuevo",
+                message: "La contraseña esta siendo recibida como undefined o null",
                 response: user.correo
             });
         }
