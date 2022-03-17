@@ -153,63 +153,37 @@ exports.editUser = async(req, res, next) => {
     if (req.body.password !== null && req.body.password !== undefined && req.body.password.length > 0) {
         UPDhashPassword = await bcrypt.hash(req.body.password, 10);
     } //STRING - SI SE ENVIA ES EL MISMO USER DESDE SU PERFIL QUIEN REALIZO LA PETICION
-    if (!Object.keys(req.body).length || Object.keys(req.body).length < 7) {
+    if (!Object.keys(req.body).length) {
         res.status(404).json({
-            message: 'El cuerpo de la peticion no debe estar vacio y debe ser enviados todos los campos minimos',
+            message: 'El cuerpo de la peticion no debe estar vacio',
             response: Object.keys(req.body).length
         });
     }
-    else {
-        if ((UPDnombre !== null && UPDnombre !== undefined) ||
-            (UPDcedula !== null && UPDcedula !== undefined) ||
-            (UPDgenero !== null && UPDgenero !== undefined) ||
-            (UPDfechaNacimiento !== null && UPDfechaNacimiento !== undefined) ||
-            (UPDhashPassword !== null && UPDhashPassword !== undefined)) {
-            const user = await User.findByPk(userId);
-            user.sucursal_id = UPDsucursal;
-            user.cedula = UPDcedula;
-            user.correo = UPDemail;
-            user.celular = UPDtelefono;
-            user.contraseña = UPDhashPassword;
-            user.nombre = UPDnombre;
-            user.genero = UPDgenero;
-            user.cargo = UPDcargo;
-            user.administrador = UPDadmin;
-            user.activo = UPDactivo;
-            user.fecha_nacimiento = UPDfechaNacimiento;
-            const response = await user.save();
-            if( response ){
-                res.status(201).json({
-                    message: 'usuario Actualizado correctamente',
-                    response: response
-                });
-            }
-            else{
-                res.status(404).json({
-                    message: 'Error'
-                });
-            }
-        } else {
-            const user = await User.findByPk(userId);
-            user.sucursal_id = UPDsucursal;
-            user.correo = UPDemail;
-            user.celular = UPDtelefono;
-            user.cargo = UPDcargo;
-            user.administrador = UPDadmin;
-            user.activo = UPDactivo;
-            user.fecha_salida = UPDfechaSalida;
-            const response = await user.save();
-            if( response ){
-                res.status(201).json({
-                    message: 'usuario Actualizado correctamente',
-                    response: response
-                });
-            }
-            else{
-                res.status(404).json({
-                    message: 'Error'
-                });
-            }
+    else{
+        const user = await User.findByPk(userId);
+        if ( UPDsucursal !== null && UPDsucursal !== undefined ) { user.sucursal_id = UPDsucursal; }
+        if ( UPDcedula !== null && UPDcedula !== undefined ) { user.cedula = UPDcedula; }
+        if ( UPDemail !== null && UPDemail !== undefined ) { user.correo = UPDemail; }
+        if ( UPDtelefono !== null && UPDtelefono !== undefined ) { user.celular = UPDtelefono; }
+        if ( UPDhashPassword !== null && UPDhashPassword !== undefined ) { user.contraseña = UPDhashPassword; }
+        if ( UPDnombre !== null && UPDnombre !== undefined ) { user.nombre = UPDnombre; }
+        if ( UPDgenero !== null && UPDgenero !== undefined ) { user.genero = UPDgenero; }
+        if ( UPDcargo !== null && UPDcargo !== undefined ) { user.cargo = UPDcargo; }
+        if ( UPDadmin !== null && UPDadmin !== undefined ) { user.administrador = UPDadmin; }
+        if ( UPDactivo !== null && UPDactivo !== undefined ) { user.activo = UPDactivo; }
+        if ( UPDfechaNacimiento !== null && UPDfechaNacimiento !== undefined ) { user.fecha_nacimiento = UPDfechaNacimiento; }
+        if ( UPDfechaSalida !== null && UPDfechaSalida !== undefined ) { user.fecha_salida = UPDfechaSalida; }
+        const response = await user.save();
+        if( response ){
+            res.status(201).json({
+                message: 'usuario Actualizado correctamente',
+                response: response
+            });
+        }
+        else{
+            res.status(404).json({
+                message: 'Error intentando actualizar el usuario'
+            });
         }
     }
 }
