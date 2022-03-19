@@ -53,15 +53,23 @@ User.init({
         allowNull: false
     },
     fecha_nacimiento: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
         allowNull: false
     },
     fecha_ingreso: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
         allowNull: false,
         defaultValue: DataTypes.NOW
     },
     fecha_salida: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    reset_token: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    reset_token_expiration: {
         type: DataTypes.DATE,
         allowNull: true
     }

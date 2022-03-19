@@ -30,7 +30,7 @@ app.use('/api', productRoutes);
 app.use('/api', saleRoutes);
 
 /* We run the server once the data base has been created */
-sequelize.sync()
+sequelize.sync({force:(process.env.RESET_DB === "true")})
 .then(() => {
     app.listen(app.get('port'), ()=>{
         console.log("Server running on port: ", app.get('port'));
