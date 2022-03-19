@@ -549,83 +549,144 @@ exports.resetUser = (req, res, next) => {
 }
 
 exports.editUser = async (req, res, next) => {
-    const userId = req.params.userId;
-    const UPDnombre = req.body.nombre;
-    const UPDcedula = req.body.cedula;
-    const UPDtelefono = req.body.telefono;
-    const UPDemail = req.body.email;
-    const UPDgenero = req.body.genero;
-    const UPDcargo = req.body.cargo;
-    const UPDsucursal = req.body.sucursal;
-    const UPDfechaNacimiento = req.body.fechaNacimiento;
-    const UPDfechaSalida = req.body.fechaSalida;
-    const UPDadmin = req.body.admin;
-    const UPDactivo = req.body.activo;
-    let UPDhashPassword = null;
-    if (req.body.password !== null && req.body.password !== undefined && req.body.password.length > 0) {
-        UPDhashPassword = await bcrypt.hash(req.body.password, 10);
-    }
-    if (!Object.keys(req.body).length) {
-        res.status(404).json({
-            message: 'El cuerpo de la peticion no debe estar vacio',
-            response: Object.keys(req.body).length
-        });
-    } else {
-        const user = await User.findByPk(userId);
-        if (UPDsucursal !== null && UPDsucursal !== undefined) {
-            user.sucursal_id = UPDsucursal;
+  const hoy = new Date();
+  const desface = Math.abs((hoy.getTimezoneOffset())/-60) * 3600000;
+  const hora_actual = (Date.now() - desface);
+  const { token, recovery } = req.query;
+  const userId = req.params.userId;
+  const UPDnombre = req.body.nombre;
+  const UPDcedula = req.body.cedula;
+  const UPDtelefono = req.body.telefono;
+  const UPDemail = req.body.email;
+  const UPDgenero = req.body.genero;
+  const UPDcargo = req.body.cargo;
+  const UPDsucursal = req.body.sucursal;
+  const UPDfechaNacimiento = req.body.fechaNacimiento;
+  const UPDfechaSalida = req.body.fechaSalida;
+  const UPDadmin = req.body.admin;
+  const UPDactivo = req.body.activo;
+  let UPDhashPassword = null;
+  if (req.body.password !== null && req.body.password !== undefined && req.body.password.length > 0) {
+      UPDhashPassword = await bcrypt.hash(req.body.password, 10);
+  }
+  if(recovery !== null && recovery !== undefined){
+    if (recovery == true || recovery == "true") {
+      if (token !== null && token !== undefined && token.length > 1) {
+        const userToken = await User.findOne({
+          where: {
+            reset_token: token
+          },
+          attributes: {
+            exclude: ['contraseña']
+          },
+        })
+        if(userToken){
+          token_exp = new Date(userToken.reset_token_expiration);
+          token_flag = hora_actual <= token_exp ? true : false;
+          if (token_flag) {
+            if (UPDhashPassword !== null && UPDhashPassword !== undefined && UPDhashPassword.length > 1) {
+                userToken.contraseña = UPDhashPassword;
+                const response = await userToken.save();
+                if(response){
+                  res.status(200).json({
+                      message: "Contraseña correctamente actualizada",
+                      response: response
+                  });
+                }
+            }
+            else{
+              res.status(404).json({
+                  message: 'La nueva contraseña no ha sido recibida o esta vacia'
+              });
+            }
+          }
+          else{
+            res.status(404).json({
+                message: 'Ha expirado el tiempo del token, debes generar uno nuevo'
+            });
+          }
         }
-        if (UPDcedula !== null && UPDcedula !== undefined) {
-            user.cedula = UPDcedula;
-        }
-        if (UPDemail !== null && UPDemail !== undefined) {
-            user.correo = UPDemail;
-        }
-        if (UPDtelefono !== null && UPDtelefono !== undefined) {
-            user.celular = UPDtelefono;
-        }
-        if (UPDhashPassword !== null && UPDhashPassword !== undefined) {
-            user.contraseña = UPDhashPassword;
-        }
-        if (UPDnombre !== null && UPDnombre !== undefined) {
-            user.nombre = UPDnombre;
-        }
-        if (UPDgenero !== null && UPDgenero !== undefined) {
-            user.genero = UPDgenero;
-        }
-        if (UPDcargo !== null && UPDcargo !== undefined) {
-            user.cargo = UPDcargo;
-        }
-        if (UPDadmin !== null && UPDadmin !== undefined) {
-            user.administrador = UPDadmin;
-        }
-        if (UPDactivo !== null && UPDactivo !== undefined) {
-            user.activo = UPDactivo;
-        }
-        if (UPDfechaNacimiento !== null && UPDfechaNacimiento !== undefined) {
-            user.fecha_nacimiento = UPDfechaNacimiento;
-        }
-        if (UPDfechaSalida !== null && UPDfechaSalida !== undefined) {
-            user.fecha_salida = UPDfechaSalida;
-        }
-        const response = await user.save();
-        const recentUser = await User.findByPk(userId, {
-            attributes: {
-                exclude: ['contraseña']
-            },
-            include: Branch
-        });
-        if (response) {
-          res.status(201).json({
-              message: 'usuario Actualizado correctamente',
-              response: recentUser
-          });
-        } else {
+        else{
           res.status(404).json({
-              message: 'Error intentando actualizar el usuario'
+              message: 'el Token de accesso es incorrecto'
           });
         }
+      }
+      else{
+        res.status(404).json({
+            message: 'el Token de accesso no ha sido recibido'
+        });
+      }
     }
+    else{
+      if (!Object.keys(req.body).length) {
+          res.status(404).json({
+              message: 'El cuerpo de la peticion no debe estar vacio',
+              response: Object.keys(req.body).length
+          });
+      } else {
+          const user = await User.findByPk(userId);
+          if (UPDsucursal !== null && UPDsucursal !== undefined) {
+              user.sucursal_id = UPDsucursal;
+          }
+          if (UPDcedula !== null && UPDcedula !== undefined) {
+              user.cedula = UPDcedula;
+          }
+          if (UPDemail !== null && UPDemail !== undefined) {
+              user.correo = UPDemail;
+          }
+          if (UPDtelefono !== null && UPDtelefono !== undefined) {
+              user.celular = UPDtelefono;
+          }
+          if (UPDhashPassword !== null && UPDhashPassword !== undefined) {
+              user.contraseña = UPDhashPassword;
+          }
+          if (UPDnombre !== null && UPDnombre !== undefined) {
+              user.nombre = UPDnombre;
+          }
+          if (UPDgenero !== null && UPDgenero !== undefined) {
+              user.genero = UPDgenero;
+          }
+          if (UPDcargo !== null && UPDcargo !== undefined) {
+              user.cargo = UPDcargo;
+          }
+          if (UPDadmin !== null && UPDadmin !== undefined) {
+              user.administrador = UPDadmin;
+          }
+          if (UPDactivo !== null && UPDactivo !== undefined) {
+              user.activo = UPDactivo;
+          }
+          if (UPDfechaNacimiento !== null && UPDfechaNacimiento !== undefined) {
+              user.fecha_nacimiento = UPDfechaNacimiento;
+          }
+          if (UPDfechaSalida !== null && UPDfechaSalida !== undefined) {
+              user.fecha_salida = UPDfechaSalida;
+          }
+          const response = await user.save();
+          const recentUser = await User.findByPk(userId, {
+              attributes: {
+                  exclude: ['contraseña']
+              },
+              include: Branch
+          });
+          if (response) {
+            res.status(201).json({
+                message: 'usuario Actualizado correctamente',
+                response: recentUser
+            });
+          } else {
+            res.status(404).json({
+                message: 'Error intentando actualizar el usuario'
+            });
+          }
+      }
+    }
+  }
+  else{
+    res.status(404).json({
+        message: 'El query param "Recovery" debe estar definido'
+    });
+  }
 }
 
 exports.deleteUser = async (req, res, next) => {
