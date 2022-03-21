@@ -191,3 +191,25 @@ exports.editBranch = async (req, res, next) => {
         });
     }
 }
+
+exports.deleteBranch =  async (req, res, next) => {
+    const sucursalId = req.params.sucursalId;
+    const sucursal = await Branch.findByPk(sucursalId);
+    if (sucursal) {
+        const response = await sucursal.destroy();
+        if (response) {
+            return res.status(200).json({
+                msg: 'Sucursal eliminada correctamente',
+                value: response
+            });
+        }
+    }
+    else {
+        return res.status(404).json({
+            errors: [{
+            value: sucursal,
+            msg: 'No coincide ninguna sucursal con este id'
+            }]
+        });
+    }
+}

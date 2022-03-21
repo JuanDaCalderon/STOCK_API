@@ -46,7 +46,7 @@ router.post('/sucursal',
     }),
     branchController.createBranch);
 
-// 3. EDIT A BRANCH: PUT - http://localhost:9000/sucursal/:id
+// 4. EDIT A BRANCH: PUT - http://localhost:9000/sucursal/:id
 router.put('/sucursal/:sucursalId',
     isAuth,
     param('sucursalId').custom(value => {
@@ -59,5 +59,8 @@ router.put('/sucursal/:sucursalId',
         });
     }),
     branchController.editBranch);
+
+// 5. DELETE A BRANCH: DELETE - http://localhost:9000/sucursal/:id
+router.delete('/sucursal/:sucursalId', isAuth, branchController.deleteBranch);
 
 module.exports = router;
