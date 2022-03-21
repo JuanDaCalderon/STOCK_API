@@ -80,7 +80,5 @@ router.delete('/usuario/:userId', userController.deleteUser); //HECHO 100%
 
 module.exports = router;
 
-// HANDLING ERRORS
-
 
 

@@ -9,39 +9,55 @@ const validator = require('validator');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 exports.getUsers = async (req, res, next) => {
-    const users = await User.findAll({
-        attributes: {
-            exclude: ['contraseña']
-        },
-        include: Branch
+  const currentPage = parseInt(req.query.page) || 1;
+  const perPage = parseInt(req.query.perPage) || 1;
+  const users = await User.findAndCountAll({
+      attributes: {
+          exclude: ['contraseña', 'sucursal_id', 'reset_token', 'reset_token_expiration']
+      },
+      include: Branch,
+      offset: (currentPage - 1) * perPage,
+      limit: perPage
+  });
+  let totalUsers = users.count;
+  const lastPage= Math.ceil(totalUsers/perPage);
+  if (users == null || users == undefined || users.length <= 0) {
+    return res.status(404).json({
+      errors: [{
+        value: users,
+        msg: 'No hay usuarios en la base de datos'
+      }]
     });
-    if (users == null || users == undefined || users.length <= 0) {
-      return res.status(404).json({
-        errors: [{
-          value: users,
-          msg: 'No hay usuarios en la base de datos'
-        }]
-      });
-    } else {
-      return res.status(200).json({
-          value: users,
-          msg: 'Usuarios adquiridos correctamente'
-      });
-    }
+  } else {
+    return res.status(200).json({
+      msg: 'Usuarios adquiridos correctamente',
+      total: totalUsers,
+      current_page: currentPage,
+      per_page: perPage,
+      last_page: lastPage,
+      has_next_page: perPage * currentPage < totalUsers,
+      has_previous_page: currentPage > 1,
+      next_page: (currentPage >= lastPage) ? null : currentPage + 1,
+      previous_page: (currentPage <= 1) ? null : currentPage - 1,
+      from: (currentPage == 1) ? 1 : ((currentPage - 1) * perPage) + 1,
+      to: (currentPage == 1) ? perPage : (currentPage == lastPage) ? totalUsers : ((currentPage - 1) * perPage) + perPage,
+      value: users.rows
+    });
+  }
 }
 
 exports.getUser = async (req, res, next) => {
   const userId = req.params.userId;
   const user = await User.findByPk(userId, {
     attributes: {
-        exclude: ['contraseña']
+      exclude: ['contraseña', 'sucursal_id', 'reset_token', 'reset_token_expiration']
     },
     include: Branch
   });
   if (user) {
     return res.status(200).json({
-        value: user,
-        msg: 'Usuario adquirido correctamente'
+      msg: 'Usuario adquirido correctamente',
+      value: user
     });
   } else {
     return res.status(404).json({
@@ -101,25 +117,25 @@ exports.createUser = async (req, res, next) => {
       const response = await User.create(userData);
       const recentUser = await User.findByPk(response.id, {
           attributes: {
-              exclude: ['contraseña']
+            exclude: ['contraseña', 'sucursal_id', 'reset_token', 'reset_token_expiration']
           },
           include: Branch
       });
       return res.status(201).json({
-          value: recentUser,
-          msg: 'usuario creado satisfactoriamente (La contraseña debe ser cambiada por el usuario)'
+        msg: 'usuario creado satisfactoriamente (La contraseña debe ser cambiada por el usuario)',
+        value: recentUser
       });
   } else {
       const response = await User.create(userData);
       const recentUser = await User.findByPk(response.id, {
           attributes: {
-              exclude: ['contraseña']
+            exclude: ['contraseña', 'sucursal_id', 'reset_token', 'reset_token_expiration']
           },
           include: Branch
       });
       return res.status(201).json({
-          value: recentUser,
-          msg: 'usuario creado satisfactoriamente (La contraseña debe ser cambiada por el usuario)'
+        msg: 'usuario creado satisfactoriamente (La contraseña debe ser cambiada por el usuario)',
+        value: recentUser,
       });
   }
 }
@@ -155,9 +171,12 @@ exports.authUser = async (req, res, next) => {
               ...user.dataValues
           };
           delete objResponse.contraseña;
+          delete objResponse.sucursal_id;
+          delete objResponse.reset_token;
+          delete objResponse.reset_token_expiration;
           return res.status(200).json({
-              value: objResponse,
-              msg: "Inicio de sesión exitoso"
+            msg: "Inicio de sesión exitoso",
+            value: objResponse
           });
       } else {
           return res.status(403).json({
@@ -560,14 +579,14 @@ exports.resetUser = (req, res, next) => {
       try {
           const mail = await sgMail.send(msg);
           return res.status(200).json({
-              value: user,
-              msg: "Se ha enviado un correo a tu email para recuperar tu contraseña",
-              email: mail
+            msg: "Se ha enviado un correo a tu email para recuperar tu contraseña",
+            value: user,
+             email: mail
           });
       } catch (error) {
         return res.status(500).json({
-            value: error.response,
-            msg: "Hubo un error intentando enviar el correo de recuperación, por favor intenta de nuevo en unos minutos"
+          msg: "Hubo un error intentando enviar el correo de recuperación, por favor intenta de nuevo en unos minutos",
+          value: error.response
         });
       }
     }
@@ -605,7 +624,7 @@ exports.editUser = async (req, res, next) => {
         reset_token: token
       },
       attributes: {
-        exclude: ['contraseña']
+        exclude: ['contraseña', 'sucursal_id']
       },
     })
     if (userToken) {
@@ -619,8 +638,8 @@ exports.editUser = async (req, res, next) => {
             const response = await userToken.save();
             if(response){
               return res.status(201).json({
-                value: response,
-                msg: "Contraseña correctamente actualizada"
+                msg: "Contraseña correctamente actualizada",
+                value: response
               });
             }
           }
@@ -783,20 +802,20 @@ exports.editUser = async (req, res, next) => {
       const response = await user.save();
       const recentUser = await User.findByPk(userId, {
           attributes: {
-              exclude: ['contraseña']
+              exclude: ['contraseña', 'sucursal_id', 'reset_token', 'reset_token_expiration']
           },
           include: Branch
       });
       if (response) {
         return res.status(201).json({
-          value: recentUser,
-          msg: 'usuario Actualizado correctamente'
+          msg: 'usuario Actualizado correctamente',
+          value: recentUser
         });
       } else {
         return res.status(500).json({
           errors: [{
-            value: response,
-            msg: 'Error intentando actualizar el usuario'
+            msg: 'Error intentando actualizar el usuario',
+            value: response
           }]
         });
       }
@@ -809,21 +828,21 @@ exports.deleteUser = async (req, res, next) => {
     const userId = req.params.userId;
     const user = await User.findByPk(userId, {
         attributes: {
-            exclude: ['contraseña']
+            exclude: ['contraseña', 'sucursal_id', 'reset_token', 'reset_token_expiration']
         },
         include: Branch
     });
     if (user) {
         const response = await user.destroy({
             attributes: {
-                exclude: ['contraseña']
+                exclude: ['contraseña', 'sucursal_id', 'reset_token', 'reset_token_expiration']
             },
             include: Branch
         });
         if (response) {
           return res.status(200).json({
-            value: response,
-            msg: 'Usuario eliminado correctamente'
+            msg: 'Usuario eliminado correctamente',
+            value: response
           });
         }
     }
