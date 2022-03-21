@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
+const isAuth = require('../middleware/is-auth');
 
 const { body, query } = require('express-validator');
 
@@ -11,10 +12,10 @@ const userController = require('../controllers/user');
 /* User middlewares */
 
 // 1. READ ALL USERS: GET - http://localhost:9000/usuarios
-router.get('/usuarios', userController.getUsers);
+router.get('/usuarios', isAuth, userController.getUsers);
 
 // 2. READ A USER: GET - http://localhost:9000/usuario/:id
-router.get('/usuario/:userId', userController.getUser);
+router.get('/usuario/:userId', isAuth, userController.getUser);
 
 // 3. CREATE A USER: POST - http://localhost:9000/usuario
 router.post('/usuario',
@@ -44,6 +45,7 @@ router.post('/auth',
 
 // 5. PASSWORD RECOVERY: PUT - http://localhost:9000/usuario?reset=password
 router.put('/usuario',
+    isAuth,
     query('email').isEmail().withMessage('Formato de Email Invalido').custom(value => {
         return User.findOne({ where: { correo: value }})
         .then(userDoc=>{
@@ -56,6 +58,7 @@ router.put('/usuario',
 
 // 6. EDIT A USER: PUT - http://localhost:9000/usuario/:id
 router.put('/usuario/:userId',
+    isAuth,
     query('recovery').custom(value => {
         if(value === undefined || value.length <= 0){
             throw new Error('El query param "Recovery" debe estar definido');
@@ -76,7 +79,7 @@ router.put('/usuario/:userId',
     userController.editUser);
 
 // 7. DELEATE A USER: DELETE - http://localhost:9000/usuario/:id
-router.delete('/usuario/:userId', userController.deleteUser); //HECHO 100%
+router.delete('/usuario/:userId', isAuth, userController.deleteUser); //HECHO 100%
 
 module.exports = router;
 

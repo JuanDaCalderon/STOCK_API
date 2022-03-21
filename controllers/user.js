@@ -4,6 +4,7 @@ const Branch = require('../models/branch');
 const crypto = require('crypto');
 const sgMail = require('@sendgrid/mail');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const validator = require('validator');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -167,18 +168,28 @@ exports.authUser = async (req, res, next) => {
     if (password) {
       let authFlag = await bcrypt.compare(password, user.contraseña);
       if (authFlag) {
-          let objResponse = {
-              ...user.dataValues
-          };
-          delete objResponse.contraseña;
-          delete objResponse.sucursal_id;
-          delete objResponse.reset_token;
-          delete objResponse.reset_token_expiration;
-          return res.status(200).json({
-            msg: "Inicio de sesión exitoso",
-            value: objResponse
-          });
-      } else {
+        const token = jwt.sign({
+            email: user.email,
+            id: user.id
+          },
+          'stock_2022_key', {
+            expiresIn: '12h'
+          }
+        );
+        let objResponse = {
+            ...user.dataValues
+        };
+        delete objResponse.contraseña;
+        delete objResponse.sucursal_id;
+        delete objResponse.reset_token;
+        delete objResponse.reset_token_expiration;
+        return res.status(200).json({
+          msg: "Inicio de sesión exitoso",
+          token: token,
+          value: objResponse
+        });
+      }
+      else {
           return res.status(403).json({
             errors:[{
               value: user.correo,
