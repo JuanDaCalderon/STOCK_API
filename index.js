@@ -24,10 +24,20 @@ app.use(bodyParser.json());
 app.use(cors({ origin: "*" }));
 
 /* Middlewares with my routes to define all endpoints */
+
 app.use('/api', userRoutes);
 app.use('/api', branchRoutes);
 app.use('/api', productRoutes);
 app.use('/api', saleRoutes);
+app.use(['/','/api'], (req, res, next)=>{
+    return res.status(401).json({
+        name: 'STOCK REST API V.01',
+        errors: [{
+            msg: 'Endpoint no encontrado',
+            requirments: 'Necesitas un Token-Authorization para acceder a nuestros recursos'
+        }]
+    });
+});
 
 /* We run the server once the data base has been created */
 sequelize.sync({force:(process.env.RESET_DB === "true")})
