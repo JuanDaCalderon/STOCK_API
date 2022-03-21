@@ -627,17 +627,7 @@ exports.editUser = async (req, res, next) => {
   const desface = Math.abs((hoy.getTimezoneOffset())/-60) * 3600000;
   const hora_actual = (Date.now() - desface);
   const userId = req.params.userId;
-  const UPDnombre = req.body.nombre;
-  const UPDcedula = req.body.cedula;
-  const UPDtelefono = req.body.telefono;
-  const UPDemail = req.body.email;
-  const UPDgenero = req.body.genero;
-  const UPDcargo = req.body.cargo;
-  const UPDsucursal = req.body.sucursal;
-  const UPDfechaNacimiento = req.body.fechaNacimiento;
-  const UPDfechaSalida = req.body.fechaSalida;
-  const UPDadmin = req.body.admin;
-  const UPDactivo = req.body.activo;
+  const {nombre, cedula, telefono, email, genero, cargo, sucursal, fechaNacimiento, fechaSalida, admin, activo } = req.body;
   let UPDhashPassword = null;
 
   if (recovery == true || recovery.toLowerCase() == "true") {
@@ -709,19 +699,19 @@ exports.editUser = async (req, res, next) => {
   else {
     const user = await User.findByPk(userId);
     const errors = [];
-    if (UPDsucursal !== null && UPDsucursal !== undefined && UPDsucursal.length > 0) {
-        user.sucursal_id = UPDsucursal;
+    if (sucursal !== null && sucursal !== undefined && sucursal.length > 0) {
+        user.sucursal_id = sucursal;
     }
-    if (UPDcedula !== null && UPDcedula !== undefined && UPDcedula.length > 0) {
-        user.cedula = UPDcedula;
+    if (cedula !== null && cedula !== undefined && cedula.length > 0) {
+        user.cedula = cedula;
     }
-    if (UPDemail !== null && UPDemail !== undefined && UPDemail.length > 0) {
-      if (validator.isEmail(UPDemail)) {
-        user.correo = UPDemail;
+    if (email !== null && email !== undefined && email.length > 0) {
+      if (validator.isEmail(email)) {
+        user.correo = email;
       }
       else {
         let error = {
-          value: UPDemail,
+          value: email,
           msg: 'Formato de Email Invalido',
           param: "email",
           location: "body"
@@ -729,11 +719,11 @@ exports.editUser = async (req, res, next) => {
         errors.push(error);
       }
     }
-    if (UPDtelefono !== null && UPDtelefono !== undefined && UPDtelefono.length > 0) {
-      if (validator.isLength(UPDtelefono, { min: 9 })) { user.celular = UPDtelefono; }
+    if (telefono !== null && telefono !== undefined && telefono.length > 0) {
+      if (validator.isLength(telefono, { min: 9 })) { user.celular = telefono; }
       else {
         let error = {
-          value: UPDtelefono,
+          value: telefono,
           msg: 'El número de teléfono debe contener al menos 10 digitos',
           param: "telefono",
           location: "body"
@@ -757,11 +747,11 @@ exports.editUser = async (req, res, next) => {
         errors.push(error);
       }
     }
-    if (UPDnombre !== null && UPDnombre !== undefined && UPDnombre.length > 0) {
-      if (validator.isLength(UPDnombre, { min: 12 })) { user.nombre = UPDnombre; }
+    if (nombre !== null && nombre !== undefined && nombre.length > 0) {
+      if (validator.isLength(nombre, { min: 12 })) { user.nombre = nombre; }
       else {
         let error = {
-          value: UPDnombre,
+          value: nombre,
           msg: 'El nombre debe tener minimo 12 caracteres',
           param: "nombre",
           location: "body"
@@ -769,17 +759,17 @@ exports.editUser = async (req, res, next) => {
         errors.push(error);
       }
     }
-    if (UPDgenero !== null && UPDgenero !== undefined && UPDgenero.length > 0) {
-        user.genero = UPDgenero;
+    if (genero !== null && genero !== undefined && genero.length > 0) {
+        user.genero = genero;
     }
-    if (UPDcargo !== null && UPDcargo !== undefined && UPDcargo.length > 0) {
-        user.cargo = UPDcargo;
+    if (cargo !== null && cargo !== undefined && cargo.length > 0) {
+        user.cargo = cargo;
     }
-    if (UPDadmin !== null && UPDadmin !== undefined) {
-      if (validator.isBoolean(UPDadmin.toString())) { user.administrador = UPDadmin; }
+    if (admin !== null && admin !== undefined) {
+      if (validator.isBoolean(admin.toString())) { user.administrador = admin; }
       else {
         let error = {
-          value: UPDadmin,
+          value: admin,
           msg: 'El campo "admin" debe ser un boolean',
           param: "admin",
           location: "body"
@@ -787,11 +777,11 @@ exports.editUser = async (req, res, next) => {
         errors.push(error);
       }
     }
-    if (UPDactivo !== null && UPDactivo !== undefined) {
-      if (validator.isBoolean(UPDactivo.toString())) { user.activo = UPDactivo; }
+    if (activo !== null && activo !== undefined) {
+      if (validator.isBoolean(activo.toString())) { user.activo = activo; }
       else {
         let error = {
-          value: UPDactivo,
+          value: activo,
           msg: 'El campo "activo" debe ser un boolean',
           param: "activo",
           location: "body"
@@ -799,11 +789,11 @@ exports.editUser = async (req, res, next) => {
         errors.push(error);
       }
     }
-    if (UPDfechaNacimiento !== null && UPDfechaNacimiento !== undefined && UPDfechaNacimiento.length > 0) {
-        user.fecha_nacimiento = UPDfechaNacimiento;
+    if (fechaNacimiento !== null && fechaNacimiento !== undefined && fechaNacimiento.length > 0) {
+        user.fecha_nacimiento = fechaNacimiento;
     }
-    if (UPDfechaSalida !== null && UPDfechaSalida !== undefined && UPDfechaSalida.length > 0) {
-        user.fecha_salida = UPDfechaSalida;
+    if (fechaSalida !== null && fechaSalida !== undefined && fechaSalida.length > 0) {
+        user.fecha_salida = fechaSalida;
     }
     /* RETURN ERRORS */
     if (errors.length > 0) {
