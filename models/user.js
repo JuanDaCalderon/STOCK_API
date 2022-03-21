@@ -37,7 +37,7 @@ User.init({
         allowNull: false
     },
     genero: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(1),
         allowNull: true
     },
     cargo: {
