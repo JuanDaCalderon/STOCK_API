@@ -640,7 +640,7 @@ exports.editUser = async (req, res, next) => {
   const UPDactivo = req.body.activo;
   let UPDhashPassword = null;
 
-  if (recovery == true || recovery == "true") {
+  if (recovery == true || recovery.toLowerCase() == "true") {
     const userToken = await User.findOne({
       where: {
         reset_token: token
