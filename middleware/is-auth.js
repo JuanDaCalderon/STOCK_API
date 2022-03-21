@@ -1,15 +1,10 @@
-const { response } = require('express');
 const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
-    const { needAuth } = req.query;
+    const authReq = req.auth_create || false;
     const token = req.get('Authorization');
-    if (needAuth) {
-        if (needAuth !== null && needAuth !== undefined && needAuth.length > 0) {
-            if (needAuth === false || needAuth.toLowerCase() === "false") {
-                return next();
-            }
-        }
+    if (authReq) {
+        return next();
     }
 
     if (!token) {

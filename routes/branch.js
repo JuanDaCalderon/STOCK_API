@@ -18,8 +18,7 @@ router.get('/sucursales', isAuth, branchController.getBranches);
 router.get('/sucursal/:sucursalId', isAuth, branchController.getBranch);
 
 // 3. CREATE A BRANCH: POST - http://localhost:9000/sucursal
-router.post('/sucursal',
-    isAuth,
+router.post('/sucursal', isAuth,
     body('telefono').isLength({ min: 6 }).withMessage('El número de teléfono debe contener al menos 7 digitos').custom(value => {
         return Branch.findOne({ where: { telefono: value }})
         .then(branchDoc=>{
@@ -47,8 +46,7 @@ router.post('/sucursal',
     branchController.createBranch);
 
 // 4. EDIT A BRANCH: PUT - http://localhost:9000/sucursal/:id
-router.put('/sucursal/:sucursalId',
-    isAuth,
+router.put('/sucursal/:sucursalId', isAuth,
     param('sucursalId').custom(value => {
         return Branch.findByPk(value)
         .then(branchDoc=>{

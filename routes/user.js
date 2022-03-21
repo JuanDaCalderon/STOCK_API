@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
 const isAuth = require('../middleware/is-auth');
+const isAuthCreate = require('../middleware/create-auth');
 
 const { body, query } = require('express-validator');
 
@@ -18,7 +19,7 @@ router.get('/usuarios', isAuth, userController.getUsers);
 router.get('/usuario/:userId', isAuth, userController.getUser);
 
 // 3. CREATE A USER: POST - http://localhost:9000/usuario
-router.post('/usuario', isAuth,
+router.post('/usuario',isAuthCreate, isAuth,
     body('email').isEmail().withMessage('Formato de Email Invalido').custom(value => {
         return User.findOne({ where: { correo: value }})
         .then(userDoc=>{
