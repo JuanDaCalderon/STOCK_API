@@ -35,10 +35,20 @@ Create the .env file and add configs
 
 Change this if needed
 ```
+NODE_ENV=development
+
+PORT=3000
+
+SENDGRID_API_KEY=*****************
+
 DB_HOST=localhost
 DB_USERNAME=root
-DB_PASSWORD=""
-DB_NAME=db_name
+DB_PASSWORD="000000"
+DB_NAME=stock
+
+RESET_PASSWORD_URL= "********************"
+RESET_DB = false
+PRIVATE_KEY = "*****************"
 ```
 
 # Run the app
