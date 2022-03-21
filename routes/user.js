@@ -14,7 +14,7 @@ const userController = require('../controllers/user');
 // 1. READ ALL USERS: GET - http://localhost:9000/usuarios
 router.get('/usuarios', isAuth, userController.getUsers);
 
-// 2. READ A USER: GET - http://localhost:9000/usuario/:id
+// 2. READ A USER: GET - http://localhost:9000/usuario/:userId
 router.get('/usuario/:userId', isAuth, userController.getUser);
 
 // 3. CREATE A USER: POST - http://localhost:9000/usuario
@@ -56,7 +56,7 @@ router.put('/usuario',
     }),
     userController.resetUser);
 
-// 6. EDIT A USER: PUT - http://localhost:9000/usuario/:id
+// 6. EDIT A USER: PUT - http://localhost:9000/usuario/:userId
 router.put('/usuario/:userId',
     isAuth,
     query('recovery').custom(value => {
@@ -78,8 +78,8 @@ router.put('/usuario/:userId',
     }),
     userController.editUser);
 
-// 7. DELEATE A USER: DELETE - http://localhost:9000/usuario/:id
-router.delete('/usuario/:userId', isAuth, userController.deleteUser); //HECHO 100%
+// 7. DELEATE A USER: DELETE - http://localhost:9000/usuario/:userId
+router.delete('/usuario/:userId', isAuth, userController.deleteUser);
 
 module.exports = router;
 

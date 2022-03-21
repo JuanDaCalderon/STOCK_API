@@ -29,7 +29,8 @@ exports.getUsers = async (req, res, next) => {
         msg: 'No hay usuarios en la base de datos'
       }]
     });
-  } else {
+  }
+  else {
     return res.status(200).json({
       msg: 'Usuarios adquiridos correctamente',
       total: totalUsers,
@@ -60,7 +61,8 @@ exports.getUser = async (req, res, next) => {
       msg: 'Usuario adquirido correctamente',
       value: user
     });
-  } else {
+  }
+  else {
     return res.status(404).json({
       errors: [{
         value: user,
@@ -91,27 +93,27 @@ exports.createUser = async (req, res, next) => {
   /* it will create the user */
   let hashPassword = await bcrypt.hash("000000", 10);
   const userData = {
-      sucursal_id: sucursal,
-      cedula: cedula.toLowerCase(),
-      correo: email.toLowerCase(),
-      celular: telefono.toLowerCase(),
-      contraseña: hashPassword,
-      nombre: nombre.toLowerCase(),
-      genero: genero.toLowerCase(),
-      cargo: cargo.toLowerCase(),
-      administrador: admin,
-      activo: true,
-      fecha_nacimiento: fechaNacimiento,
-      fecha_salida: null
+    sucursal_id: sucursal,
+    cedula: cedula.toLowerCase(),
+    correo: email.toLowerCase(),
+    celular: telefono.toLowerCase(),
+    contraseña: hashPassword,
+    nombre: nombre.toLowerCase(),
+    genero: genero.toLowerCase(),
+    cargo: cargo.toLowerCase(),
+    administrador: admin,
+    activo: true,
+    fecha_nacimiento: fechaNacimiento,
+    fecha_salida: null
   }
   const users = await User.findAll();
   const branch = await Branch.findAll();
   if (users == null || users == undefined || users.length <= 0) {
       if (branch == null || branch == undefined || branch.length <= 0) {
           await Branch.create({
-              nombre: "cambiame",
-              direccion: "cambiame",
-              telefono: "1234567",
+              nombre: "cambiame".toLowerCase(),
+              direccion: "cambiame".toLowerCase(),
+              telefono: "1234567".toLowerCase(),
               activa: true
           });
       }
@@ -172,7 +174,7 @@ exports.authUser = async (req, res, next) => {
             email: user.email,
             id: user.id
           },
-          'stock_2022_key', {
+          process.env.PRIVATE_KEY, {
             expiresIn: '12h'
           }
         );
@@ -236,7 +238,7 @@ exports.resetUser = (req, res, next) => {
   let ResetUrl = process.env.RESET_PASSWORD_URL;
   let hoy = new Date();
   let desface = Math.abs((hoy.getTimezoneOffset())/-60) * 3600000;
-  crypto.randomBytes(32, async (error, buffer)=>{
+  crypto.randomBytes(32, async (error, buffer) => {
     const token = buffer.toString('hex');
     const user = await User.findOne({where:{correo: email.toLowerCase()}});
     user.reset_token = token;
@@ -607,6 +609,15 @@ exports.resetUser = (req, res, next) => {
 exports.editUser = async (req, res, next) => {
   const { token, recovery } = req.query;
   const errors = validationResult(req);
+  if (!Object.keys(req.body).length) {
+    return res.status(422).json({
+      errors: [{
+        value: Object.keys(req.body).length,
+        msg: 'El cuerpo de la peticion no debe estar vacio',
+        location: "body"
+      }]
+    });
+  }
   if (!errors.isEmpty()) {
     return res.status(422).json({
       errors: errors.array()
@@ -696,143 +707,131 @@ exports.editUser = async (req, res, next) => {
     }
   }
   else {
-    if (!Object.keys(req.body).length) {
-        return res.status(422).json({
-          errors: [{
-            value: Object.keys(req.body).length,
-            msg: 'El cuerpo de la peticion no debe estar vacio',
-            location: "body"
-          }]
-        });
+    const user = await User.findByPk(userId);
+    const errors = [];
+    if (UPDsucursal !== null && UPDsucursal !== undefined && UPDsucursal.length > 0) {
+        user.sucursal_id = UPDsucursal;
     }
-    else {
-      const user = await User.findByPk(userId);
-      const errors = [];
-      if (UPDsucursal !== null && UPDsucursal !== undefined && UPDsucursal.length > 0) {
-          user.sucursal_id = UPDsucursal;
+    if (UPDcedula !== null && UPDcedula !== undefined && UPDcedula.length > 0) {
+        user.cedula = UPDcedula;
+    }
+    if (UPDemail !== null && UPDemail !== undefined && UPDemail.length > 0) {
+      if (validator.isEmail(UPDemail)) {
+        user.correo = UPDemail;
       }
-      if (UPDcedula !== null && UPDcedula !== undefined && UPDcedula.length > 0) {
-          user.cedula = UPDcedula;
-      }
-      if (UPDemail !== null && UPDemail !== undefined && UPDemail.length > 0) {
-        if (validator.isEmail(UPDemail)) {
-          user.correo = UPDemail;
+      else {
+        let error = {
+          value: UPDemail,
+          msg: 'Formato de Email Invalido',
+          param: "email",
+          location: "body"
         }
-        else {
-          let error = {
-            value: UPDemail,
-            msg: 'Formato de Email Invalido',
-            param: "email",
-            location: "body"
-          }
-          errors.push(error);
+        errors.push(error);
+      }
+    }
+    if (UPDtelefono !== null && UPDtelefono !== undefined && UPDtelefono.length > 0) {
+      if (validator.isLength(UPDtelefono, { min: 9 })) { user.celular = UPDtelefono; }
+      else {
+        let error = {
+          value: UPDtelefono,
+          msg: 'El número de teléfono debe contener al menos 10 digitos',
+          param: "telefono",
+          location: "body"
         }
+        errors.push(error);
       }
-      if (UPDtelefono !== null && UPDtelefono !== undefined && UPDtelefono.length > 0) {
-        if (validator.isLength(UPDtelefono, { min: 9 })) { user.celular = UPDtelefono; }
-        else {
-          let error = {
-            value: UPDtelefono,
-            msg: 'El número de teléfono debe contener al menos 10 digitos',
-            param: "telefono",
-            location: "body"
-          }
-          errors.push(error);
+    }
+    if (req.body.password !== null && req.body.password !== undefined && req.body.password.length > 0) {
+      if (validator.isStrongPassword(req.body.password)) {
+        UPDhashPassword = await bcrypt.hash(req.body.password, 10);
+        user.contraseña = UPDhashPassword;
+      }
+      else {
+        let error = {
+          value: "*********",
+          msg: 'Contraseña muy debil',
+          requirements: 'La contraseña debe tener minimo 8 caracteres, 1 minuscula, 1 mayuscula, 1 numero y 1 simbolo',
+          param: "password",
+          location: "body"
         }
+        errors.push(error);
       }
-      if (req.body.password !== null && req.body.password !== undefined && req.body.password.length > 0) {
-        if (validator.isStrongPassword(req.body.password)) {
-          UPDhashPassword = await bcrypt.hash(req.body.password, 10);
-          user.contraseña = UPDhashPassword;
+    }
+    if (UPDnombre !== null && UPDnombre !== undefined && UPDnombre.length > 0) {
+      if (validator.isLength(UPDnombre, { min: 12 })) { user.nombre = UPDnombre; }
+      else {
+        let error = {
+          value: UPDnombre,
+          msg: 'El nombre debe tener minimo 12 caracteres',
+          param: "nombre",
+          location: "body"
         }
-        else {
-          let error = {
-            value: "*********",
-            msg: 'Contraseña muy debil',
-            requirements: 'La contraseña debe tener minimo 8 caracteres, 1 minuscula, 1 mayuscula, 1 numero y 1 simbolo',
-            param: "password",
-            location: "body"
-          }
-          errors.push(error);
+        errors.push(error);
+      }
+    }
+    if (UPDgenero !== null && UPDgenero !== undefined && UPDgenero.length > 0) {
+        user.genero = UPDgenero;
+    }
+    if (UPDcargo !== null && UPDcargo !== undefined && UPDcargo.length > 0) {
+        user.cargo = UPDcargo;
+    }
+    if (UPDadmin !== null && UPDadmin !== undefined) {
+      if (validator.isBoolean(UPDadmin.toString())) { user.administrador = UPDadmin; }
+      else {
+        let error = {
+          value: UPDadmin,
+          msg: 'El campo "admin" debe ser un boolean',
+          param: "admin",
+          location: "body"
         }
+        errors.push(error);
       }
-      if (UPDnombre !== null && UPDnombre !== undefined && UPDnombre.length > 0) {
-        if (validator.isLength(UPDnombre, { min: 12 })) { user.nombre = UPDnombre; }
-        else {
-          let error = {
-            value: UPDnombre,
-            msg: 'El nombre debe tener minimo 12 caracteres',
-            param: "nombre",
-            location: "body"
-          }
-          errors.push(error);
+    }
+    if (UPDactivo !== null && UPDactivo !== undefined) {
+      if (validator.isBoolean(UPDactivo.toString())) { user.activo = UPDactivo; }
+      else {
+        let error = {
+          value: UPDactivo,
+          msg: 'El campo "activo" debe ser un boolean',
+          param: "activo",
+          location: "body"
         }
+        errors.push(error);
       }
-      if (UPDgenero !== null && UPDgenero !== undefined && UPDgenero.length > 0) {
-          user.genero = UPDgenero;
-      }
-      if (UPDcargo !== null && UPDcargo !== undefined && UPDcargo.length > 0) {
-          user.cargo = UPDcargo;
-      }
-      if (UPDadmin !== null && UPDadmin !== undefined) {
-        if (validator.isBoolean(UPDadmin.toString())) { user.administrador = UPDadmin; }
-        else {
-          let error = {
-            value: UPDadmin,
-            msg: 'El campo "admin" debe ser un boolean',
-            param: "admin",
-            location: "body"
-          }
-          errors.push(error);
-        }
-      }
-      if (UPDactivo !== null && UPDactivo !== undefined) {
-        if (validator.isBoolean(UPDactivo.toString())) { user.activo = UPDactivo; }
-        else {
-          let error = {
-            value: UPDactivo,
-            msg: 'El campo "activo" debe ser un boolean',
-            param: "activo",
-            location: "body"
-          }
-          errors.push(error);
-        }
-      }
-      if (UPDfechaNacimiento !== null && UPDfechaNacimiento !== undefined && UPDfechaNacimiento.length > 0) {
-          user.fecha_nacimiento = UPDfechaNacimiento;
-      }
-      if (UPDfechaSalida !== null && UPDfechaSalida !== undefined && UPDfechaSalida.length > 0) {
-          user.fecha_salida = UPDfechaSalida;
-      }
-      /* RETURN ERRORS */
-      if (errors.length > 0) {
-        return res.status(422).json({
-          errors: errors
-        });
-      }
-      const response = await user.save();
-      const recentUser = await User.findByPk(userId, {
-          attributes: {
-              exclude: ['contraseña', 'sucursal_id', 'reset_token', 'reset_token_expiration']
-          },
-          include: Branch
+    }
+    if (UPDfechaNacimiento !== null && UPDfechaNacimiento !== undefined && UPDfechaNacimiento.length > 0) {
+        user.fecha_nacimiento = UPDfechaNacimiento;
+    }
+    if (UPDfechaSalida !== null && UPDfechaSalida !== undefined && UPDfechaSalida.length > 0) {
+        user.fecha_salida = UPDfechaSalida;
+    }
+    /* RETURN ERRORS */
+    if (errors.length > 0) {
+      return res.status(422).json({
+        errors: errors
       });
-      if (response) {
-        return res.status(201).json({
-          msg: 'usuario Actualizado correctamente',
-          value: recentUser
-        });
-      } else {
-        return res.status(500).json({
-          errors: [{
-            msg: 'Error intentando actualizar el usuario',
-            value: response
-          }]
-        });
-      }
+    }
+    const response = await user.save();
+    const recentUser = await User.findByPk(userId, {
+        attributes: {
+            exclude: ['contraseña', 'sucursal_id', 'reset_token', 'reset_token_expiration']
+        },
+        include: Branch
+    });
+    if (response) {
+      return res.status(201).json({
+        msg: 'usuario Actualizado correctamente',
+        value: recentUser
+      });
+    } else {
+      return res.status(500).json({
+        errors: [{
+          msg: 'Error intentando actualizar el usuario',
+          value: response
+        }]
+      });
     }
   }
-
 }
 
 exports.deleteUser = async (req, res, next) => {

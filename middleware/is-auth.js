@@ -12,7 +12,7 @@ module.exports = (req, res, next) => {
     }
     let decodedToken;
     try {
-        decodedToken = jwt.verify(token, 'stock_2022_key');
+        decodedToken = jwt.verify(token, process.env.PRIVATE_KEY);
     } catch (error) {
         return res.status(500).json({
             errors:[{
