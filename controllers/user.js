@@ -821,14 +821,17 @@ exports.deleteUser = async (req, res, next) => {
         });
         if (response) {
           return res.status(200).json({
-              message: "Usuario eliminado correctamente",
-              response: response
+            value: response,
+            msg: 'Usuario eliminado correctamente'
           });
         }
-    } else {
+    }
+    else {
       return res.status(404).json({
-          message: "No coincide ningun usuario con este id",
-          response: user
+        errors: [{
+          value: user,
+          msg: 'No coincide ningun usuario con este id'
+        }]
       });
     }
 }
