@@ -15,10 +15,14 @@ ventaProducto.init({
         primaryKey: true
     },
     venta_producto_ref_key: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: false,
     },
     producto_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    cantidad:{
         type: DataTypes.INTEGER,
         allowNull: false
     },
@@ -32,7 +36,7 @@ ventaProducto.init({
     tableName: 'ventaproductos',
     indexes: [{
         name: 'fk_venta_producto_ref',
-        unique: 'BTREE',
+        unique: false,
         fields: ['venta_producto_ref_key']
     }],
     charset: 'utf8mb4',
@@ -56,7 +60,7 @@ ventasTotal.init({
         allowNull: false
     },
     venta_producto_ref: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: false
     },
     sucursal_id: {
