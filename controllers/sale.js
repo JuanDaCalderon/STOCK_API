@@ -172,8 +172,14 @@ function promeseGetProducts(productos, ref_key) {
                     referencia: element.referencia
                 }
             }).then(product => {
-                if (cantidad > product.cantidad) {
-                    return reject("No existe en el inventario esa catidad de productos para: " + product.referencia);
+                if (!product) {
+                    return reject("No existe en el inventario un productro con esta Referencia o Id");
+                }
+                else
+                {
+                    if (cantidad > product.cantidad) {
+                        return reject("No existe en el inventario esa catidad de productos para: " + product.referencia);
+                    }
                 }
                 let productSaleObj = {
                     venta_producto_ref_key: ref_key,
@@ -190,7 +196,8 @@ function promeseGetProducts(productos, ref_key) {
         setTimeout(functioncheckProductArray = () => {
             if (productosToUpdate.length > 0 && productSaleObjs.length > 0) {
                 return resolve({productosToUpdate:productosToUpdate, productSaleObjs: productSaleObjs});
-            } else {
+            }
+            else {
                 functioncheckProductArray();
             }
         }, 200)
@@ -208,6 +215,15 @@ exports.createSale = async (req, res, next) => {
             value: Object.keys(req.body).length,
             msg: 'El cuerpo de la peticion no debe estar vacio y debe ser enviados todos los campos',
             location: "body"
+            }]
+        });
+    }
+    if (!Array.isArray(productos)) {
+        return res.status(422).json({
+            errors:[{
+                value: productos,
+                msg: 'el campo productos debe ser un Array con los productos comprados',
+                location: "body"
             }]
         });
     }
