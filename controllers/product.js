@@ -65,7 +65,7 @@ exports.getProduct = async (req, res, next) => {
         return res.status(422).json({
             errors: [{
             value: {productId,productRef},
-            msg: 'No se recibio ningun Product Id ni tampoco ningun Product Ref'
+            msg: 'No se recibio ningun Product Id ni tampoco ningún Product Ref'
             }]
         })
     }
@@ -90,6 +90,7 @@ exports.getProduct = async (req, res, next) => {
             include: Branch
         });
     }
+
     if ((productoByRef && productoByRef.rows.length > 0) || productoById) {
         if (productoByRef && !productoById) {
             if (totalProductos > 1) {

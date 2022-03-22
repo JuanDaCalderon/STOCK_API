@@ -23,14 +23,7 @@ exports.getSales = async (req, res, next) => {
                         exclude: ['sucursal_id', 'contraseña', 'reset_token', 'reset_token_expiration']
                     },
                     include: Branch
-                }/* ,
-                {
-                    model: ventaProducto,
-                    attributes: {
-                        exclude: ['producto_id']
-                    },
-                    include: Product
-                } */
+                }
             ],
             offset: (currentPage - 1) * perPage,
             limit: perPage
@@ -72,8 +65,98 @@ exports.getSales = async (req, res, next) => {
     }
 }
 
-exports.getSale = (req, res, next) => {
-    res.status(200).json({title: 'Ventas'});
+exports.getProductsSale = async (req, res, next) => {
+    const { ref_key } = req.query;
+    if (!Object.keys(req.query).length) {
+        return res.status(422).json({
+            errors:[{
+            value: Object.keys(req.query).length,
+            msg: 'Los query params de la peticion no debe estar vacio',
+            location: "query"
+            }]
+        });
+    }
+    const productSales = await ventaProducto.findAll({
+        attributes: {
+            exclude: ['producto_id']
+        },
+        where: {
+            venta_producto_ref_key: ref_key
+        },
+        include: Product
+    });
+    if (productSales && productSales.length > 0) {
+        return res.status(200).json({
+            msg: `Productos vendidos correspondientes a la venta: ${ref_key}`,
+            value: productSales
+        });
+    }
+    else {
+        return res.status(404).json({
+            errors: [{
+                value: productSales,
+                msg: 'No coincide ningun producto con esta ref_key'
+            }]
+        });
+    }
+}
+
+exports.getSale = async (req, res, next) => {
+    const { saleId, ref_key } = req.query;
+    let saleProductosByRef = undefined || null;
+    let saleProductosById = undefined || null;
+    if (!saleId && !ref_key) {
+        return res.status(422).json({
+            errors: [{
+                value: {
+                    saleId,
+                    ref_key
+                },
+                msg: 'No se recibio ningun Sale Id ni tampoco ningún Sale Ref como query param'
+            }]
+        })
+    }
+
+    if (ref_key && ref_key.length > 0) {
+        saleProductosByRef = await ventasTotal.findOne({
+            where: { venta_producto_ref: ref_key },
+            attributes: {
+                exclude: ['sucursal_id', 'user_id']
+            },
+            include: [Branch, User]
+        });
+    }
+    else if (saleId && saleId.length > 0) {
+        saleProductosById = await ventasTotal.findByPk(saleId, {
+            attributes: {
+                exclude: ['sucursal_id', 'user_id']
+            },
+            include: [Branch, User]
+        });
+    }
+
+    if (saleProductosByRef || saleProductosById) {
+        if (saleProductosByRef && !saleProductosById) {
+            return res.status(200).json({
+                msg: 'Venta adquirida correctamente por ref_key',
+                value: saleProductosByRef
+            });
+        }
+        else /* if (!saleProductosByRef && saleProductosById) */ {
+            return res.status(200).json({
+                msg: 'Venta adquirida correctamente por id',
+                value: saleProductosById
+            });
+        }
+    }
+    else {
+        return res.status(404).json({
+            errors: [{
+            value: null,
+            msg: 'No coincide ninguna venta con la Referencia o con el Id'
+            }]
+        })
+    }
 }
 
 function promeseGetProducts(productos, ref_key) {
@@ -162,7 +245,7 @@ exports.createSale = async (req, res, next) => {
             });
             if (venta) {
                 return res.status(200).json({
-                    msg: 'Crear Venta',
+                    msg: 'Venta creada Correctamente',
                     value: {
                         nombreCliente: nombreCliente.toLowerCase(),
                         correoCliente: correoCliente.toLowerCase(),
