@@ -86,7 +86,6 @@ exports.createBranch = async (req, res, next) => {
         telefono: telefono.toLowerCase(),
         activa: true
     });
-    console.log(response);
     if (response) {
         return res.status(201).json({
             msg: 'Sucursal creada satisfactoriamente',

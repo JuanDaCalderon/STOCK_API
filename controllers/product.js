@@ -190,7 +190,6 @@ exports.createProduct = async (req, res, next) => {
 exports.editProduct = async (req, res, next) => {
     const {nombre, descripcion, cantidad, marca, talla, categoria, sucursal, referencia, precioMinimo, disponible} = req.body;
     const errors = validationResult(req);
-    console.log(validationResult(req));
     if (!Object.keys(req.body).length) {
         return res.status(422).json({
             errors:[{

@@ -284,3 +284,44 @@ exports.createSale = async (req, res, next) => {
         });
     }
 }
+
+exports.deleteSale = async (req, res, next) => {
+    const saleId = req.params.saleId;
+    const sale = await ventasTotal.findByPk(saleId);
+    if (sale) {
+        const response = await sale.destroy();
+        if (response) {
+            const productSales = await ventaProducto.destroy({
+                where: {
+                    venta_producto_ref_key: response.venta_producto_ref
+                }
+            });
+            if (productSales) {
+                return res.status(200).json({
+                    msg: 'venta eliminada correctamente',
+                    value: response
+                });
+            }
+            return res.status(500).json({
+                msg: 'Error intentando eliminar la venta',
+                value: {
+                    products_sale: productSales
+                }
+            });
+        }
+        return res.status(500).json({
+            msg: 'Error intentando eliminar la venta',
+            value: {
+                sale: response
+            }
+        });
+    }
+    else {
+        return res.status(404).json({
+            errors: [{
+            value: sale,
+            msg: 'No coincide ninguna venta con este id'
+            }]
+        });
+    }
+}
