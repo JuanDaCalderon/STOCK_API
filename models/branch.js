@@ -23,6 +23,10 @@ Sucursal.init({
         type: DataTypes.STRING,
         allowNull: true
     },
+    imagen:{
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     activa:{
         type: DataTypes.BOOLEAN,
         allowNull: false

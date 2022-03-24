@@ -1,29 +1,58 @@
-/* Dotenv to bring them back all enviroment variables defined in .env */
+const path = require('path');
 require("dotenv").config();
-/* Express functionality requirements */
+
 const express = require('express');
 const bodyParser = require('body-parser');
+const sequelize = require('./config/database');
+const multer = require('multer');
 const cors = require('cors');
 
-/* My routes Requirments */
 const branchRoutes = require('./routes/branch');
 const userRoutes = require('./routes/user');
 const productRoutes = require('./routes/product');
 const saleRoutes = require('./routes/sale');
 
-/* Sequelize Requirments */
-const sequelize = require('./config/database');
-
-/* Initialize Express */
 const app = express();
 
-/* Express Config headers (Port in use, content type of the response and request, json body parser, cors config to all origins) */
-app.set('port', process.env.PORT);
-app.set('content-type', 'application/json');
-app.use(bodyParser.json());
-app.use(cors({ origin: "*" }));
+const fileStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'images');
+    },
+    filename: (req, file, cb) => {
+        let today = new Date();
+        cb(null, `${today.toDateString().replace(/ /g,'_')}_${file.originalname}`);
+    }
+});
 
-/* Middlewares with my routes to define all endpoints */
+const fileFilter = (req, file, cb) => {
+    if (
+        file.mimetype === 'image/png' ||
+        file.mimetype === 'image/jpg' ||
+        file.mimetype === 'image/jpeg'
+    ) {
+        cb(null, true);
+    } else {
+        cb(null, false);
+    }
+};
+
+app.set('port', process.env.PORT);
+app.use(bodyParser.json()); // application/json
+app.use(
+  multer({ storage: fileStorage, fileFilter: fileFilter }).single('image')
+);
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
+app.use(cors({ origin: "*", allowedHeaders: "*", exposedHeaders: "*" }));
+/* app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader(
+        'Access-Control-Allow-Methods',
+        'OPTIONS, GET, POST, PUT, PATCH, DELETE'
+    );
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    next();
+}); */
 
 app.use('/api', userRoutes);
 app.use('/api', branchRoutes);
@@ -39,17 +68,11 @@ app.use(['/','/api'], (req, res, next)=>{
     });
 });
 
-/* We run the server once the data base has been created */
+
 sequelize.sync({force:(process.env.RESET_DB === "true")})
 .then(() => {
     app.listen(app.get('port'), ()=>{
         console.log("Server running on port: ", app.get('port'));
     });
 })
-.catch(err => {
-    console.log(err);
-});
-
-
-
-
+.catch(err => console.log(err) );

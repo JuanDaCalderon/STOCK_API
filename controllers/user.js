@@ -1,6 +1,7 @@
 /* User model requirement */
 const User = require('../models/user');
 const Branch = require('../models/branch');
+const { uploadToBucket } = require('../middleware/s3');
 const crypto = require('crypto');
 const sgMail = require('@sendgrid/mail');
 const bcrypt = require('bcryptjs');
@@ -76,14 +77,16 @@ exports.createUser = async (req, res, next) => {
   const {nombre, cedula, telefono, email, genero, cargo, sucursal, fechaNacimiento, admin} = req.body;
   const errors = validationResult(req);
   /* If validators */
-  if (!Object.keys(req.body).length || Object.keys(req.body).length < 9) {
-    return res.status(422).json({
-      errors:[{
-        value: Object.keys(req.body).length,
-        msg: 'El cuerpo de la peticion no debe estar vacio y debe ser enviados todos los campos',
-        location: "body"
-      }]
-    });
+  if (!req.file){
+    if (!Object.keys(req.body).length || Object.keys(req.body).length < 9) {
+      return res.status(422).json({
+        errors:[{
+          value: Object.keys(req.body).length,
+          msg: 'El cuerpo de la peticion no debe estar vacio y debe ser enviados todos los campos',
+          location: "body"
+        }]
+      });
+    }
   }
   if (!errors.isEmpty()) {
     return res.status(422).json({
@@ -92,6 +95,8 @@ exports.createUser = async (req, res, next) => {
   }
   /* it will create the user */
   let hashPassword = await bcrypt.hash("000000", 10);
+  let s3Response = null;
+  (req.file) ? s3Response = await uploadToBucket(process.env.AWS_BUCKET, req.file) : null
   const userData = {
     sucursal_id: sucursal,
     cedula: cedula.toLowerCase(),
@@ -101,6 +106,7 @@ exports.createUser = async (req, res, next) => {
     nombre: nombre.toLowerCase(),
     genero: genero.toLowerCase(),
     cargo: cargo.toLowerCase(),
+    imagen: ( s3Response ) ? s3Response.Location : null,
     administrador: admin,
     activo: true,
     fecha_nacimiento: fechaNacimiento,
@@ -114,6 +120,7 @@ exports.createUser = async (req, res, next) => {
               nombre: "cambiame".toLowerCase(),
               direccion: "cambiame".toLowerCase(),
               telefono: "1234567".toLowerCase(),
+              imagen: null,
               activa: true
           });
       }
@@ -609,15 +616,18 @@ exports.resetUser = (req, res, next) => {
 exports.editUser = async (req, res, next) => {
   const { token, recovery } = req.query;
   const errors = validationResult(req);
-  if (!Object.keys(req.body).length) {
-    return res.status(422).json({
-      errors: [{
-        value: Object.keys(req.body).length,
-        msg: 'El cuerpo de la peticion no debe estar vacio',
-        location: "body"
-      }]
-    });
+  if (!req.file) {
+    if (!Object.keys(req.body).length) {
+      return res.status(422).json({
+        errors: [{
+          value: Object.keys(req.body).length,
+          msg: 'El cuerpo de la peticion no debe estar vacio',
+          location: "body"
+        }]
+      });
+    }
   }
+
   if (!errors.isEmpty()) {
     return res.status(422).json({
       errors: errors.array()
@@ -794,6 +804,11 @@ exports.editUser = async (req, res, next) => {
     }
     if (fechaSalida !== null && fechaSalida !== undefined && fechaSalida.length > 0) {
         user.fecha_salida = fechaSalida;
+    }
+    let s3Response = null || undefined;
+    (req.file) ? s3Response = await uploadToBucket(process.env.AWS_BUCKET, req.file): null
+    if (s3Response) {
+      user.imagen = s3Response.Location;
     }
     /* RETURN ERRORS */
     if (errors.length > 0) {

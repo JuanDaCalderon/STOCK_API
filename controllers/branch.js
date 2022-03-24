@@ -1,4 +1,5 @@
 const Branch = require('../models/branch');
+const { uploadToBucket } = require('../middleware/s3');
 const { validationResult } = require('express-validator');
 const validator = require('validator');
 
@@ -80,10 +81,13 @@ exports.createBranch = async (req, res, next) => {
             errors: errors.array()
         });
     }
+    let s3Response = null;
+    (req.file) ? s3Response = await uploadToBucket(process.env.AWS_BUCKET, req.file) : null
     const response = await Branch.create({
         nombre: nombre.toLowerCase(),
         direccion: direccion.toLowerCase(),
         telefono: telefono.toLowerCase(),
+        imagen: ( s3Response ) ? s3Response.Location : null,
         activa: true
     });
     if (response) {
@@ -105,14 +109,16 @@ exports.createBranch = async (req, res, next) => {
 exports.editBranch = async (req, res, next) => {
     const {nombre, direccion, telefono, activa} = req.body;
     const errors = validationResult(req);
-    if (!Object.keys(req.body).length) {
-        return res.status(422).json({
-            errors:[{
-            value: Object.keys(req.body).length,
-            msg: 'El cuerpo de la peticion no debe estar vacio',
-            location: "body"
-            }]
-        });
+    if (!req.file) {
+        if (!Object.keys(req.body).length) {
+            return res.status(422).json({
+                errors: [{
+                    value: Object.keys(req.body).length,
+                    msg: 'El cuerpo de la peticion no debe estar vacio',
+                    location: "body"
+                }]
+            });
+        }
     }
     if (!errors.isEmpty()) {
         return res.status(422).json({
@@ -121,6 +127,7 @@ exports.editBranch = async (req, res, next) => {
     }
     const branch = req.branchDoc;
     const errorsVal = [];
+
     if (nombre !== null && nombre !== undefined && nombre.length > 0) {
         if (validator.isLength(nombre, { min: 7 })) { branch.nombre = nombre; }
         else {
@@ -168,6 +175,11 @@ exports.editBranch = async (req, res, next) => {
             }
             errorsVal.push(error);
         }
+    }
+    let s3Response = null || undefined;
+    (req.file) ? s3Response = await uploadToBucket(process.env.AWS_BUCKET, req.file) : null
+    if (s3Response) {
+        branch.imagen = s3Response.Location;
     }
     if (errorsVal.length > 0) {
         return res.status(422).json({

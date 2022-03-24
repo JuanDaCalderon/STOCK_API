@@ -44,6 +44,10 @@ User.init({
         type: DataTypes.STRING,
         allowNull: false
     },
+    imagen: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     administrador: {
         type: DataTypes.BOOLEAN,
         allowNull: false
