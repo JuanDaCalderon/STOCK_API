@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 require("dotenv").config();
 
 const express = require('express');
@@ -6,6 +7,9 @@ const bodyParser = require('body-parser');
 const sequelize = require('./config/database');
 const multer = require('multer');
 const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
+const morgan = require('morgan');
 
 const branchRoutes = require('./routes/branch');
 const userRoutes = require('./routes/user');
@@ -35,6 +39,14 @@ const fileFilter = (req, file, cb) => {
         cb(null, false);
     }
 };
+
+const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {
+    flags: 'a'
+});
+
+app.use(helmet());
+app.use(compression());
+app.use(morgan('combined',{stream:accessLogStream}));
 
 app.set('port', process.env.PORT);
 app.use(bodyParser.json()); // application/json
