@@ -80,8 +80,8 @@ app.use(['/','/api'], (req, res, next)=>{
     });
 });
 
-
-sequelize.sync({force:(process.env.RESET_DB === "true")})
+sequelize.sync({force:true})
+//sequelize.sync({force:(process.env.RESET_DB === "true")})
 .then(() => {
     app.listen(app.get('port'), ()=>{
         console.log("Server running on port: ", app.get('port'));
