@@ -19,7 +19,7 @@ router.put('/producto/:productId', isAuth,
         return Product.findByPk(value)
         .then(productDoc=>{
             if (!productDoc) {
-                return Promise.reject('No coincide ningun producto con este id');
+                return Promise.reject('No coincide ningún producto con este id');
             }
             req.productDoc = productDoc;
         });

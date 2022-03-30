@@ -28,14 +28,14 @@ router.post('/usuario',isAuthCreate, isAuth,
             }
         });
     }),
-    body('telefono').isLength({ min: 9 }).withMessage('El número de teléfono debe contener al menos 10 digitos'),
-    body('nombre').isLength({ min: 12 }).withMessage('El nombre debe tener minimo 12 caracteres'),
+    body('telefono').isLength({ min: 9 }).withMessage('El número de teléfono debe contener al menos 10 dígitos'),
+    body('nombre').isLength({ min: 12 }).withMessage('El nombre debe tener mínimo 12 caracteres'),
     body('admin').isBoolean().withMessage('El campo "admin" debe ser un boolean'),
     body('genero').custom(value => {
         console.log(value);
         if (value == 'm' || value == 'M') { return true; }
         else if(value == 'f' || value == 'F') { return true; }
-        else { throw new Error('El genero debe ser "f" ó "m"'); }
+        else { throw new Error('El género debe ser "f" ó "m"'); }
     }),
     userController.createUser);
 

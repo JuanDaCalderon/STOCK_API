@@ -17,7 +17,7 @@ router.get('/venta/productos', isAuth, saleController.getProductsSale);
 // 4. CREATE A SALE: POST - http://localhost:9000/api/venta
 router.post('/venta', isAuth,
     body('correoCliente').isEmail().withMessage('Formato de email del cliente invalido'),
-    body('nombreCliente').isLength({ min: 12 }).withMessage('El nombre del cliente debe tener minimo 12 caracteres'),
+    body('nombreCliente').isLength({ min: 12 }).withMessage('El nombre del cliente debe tener mínimo 12 caracteres'),
     saleController.createSale);
 
 // 5. DELETE A SALE: DELETE - http://localhost:9000/api/venta
