@@ -19,7 +19,7 @@ router.get('/sucursal/:sucursalId', isAuth, branchController.getBranch);
 
 // 3. CREATE A BRANCH: POST - http://localhost:9000/sucursal
 router.post('/sucursal', isAuth,
-    body('telefono').isLength({ min: 6 }).withMessage('El número de teléfono debe contener al menos 7 digitos').custom(value => {
+    body('telefono').isLength({ min: 6 }).withMessage('El número de teléfono debe contener al menos 7 dígitos').custom(value => {
         return Branch.findOne({ where: { telefono: value }})
         .then(branchDoc=>{
             if (branchDoc) {
@@ -27,7 +27,7 @@ router.post('/sucursal', isAuth,
             }
         });
     }),
-    body('nombre').isLength({ min: 7 }).withMessage('El nombre debe tener minimo 8 caracteres').custom(value => {
+    body('nombre').isLength({ min: 7 }).withMessage('El nombre debe tener mínimo 8 caracteres').custom(value => {
         return Branch.findOne({ where: { nombre: value }})
         .then(branchDoc=>{
             if (branchDoc) {
@@ -35,7 +35,7 @@ router.post('/sucursal', isAuth,
             }
         });
     }),
-    body('direccion').isLength({ min: 9 }).withMessage('La dirección debe tener minimo 10 caracteres').custom(value => {
+    body('direccion').isLength({ min: 9 }).withMessage('La dirección debe tener mínimo 10 caracteres').custom(value => {
         return Branch.findOne({ where: { direccion: value }})
         .then(branchDoc=>{
             if (branchDoc) {
