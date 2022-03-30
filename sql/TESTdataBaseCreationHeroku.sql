@@ -82,6 +82,8 @@ CREATE TABLE IF NOT EXISTS ventasTotal(
 );
 ALTER TABLE ventastotal ADD INDEX fk_venta_total_producto_ref (venta_producto_ref);
 ALTER TABLE ventastotal ADD CONSTRAINT fk_venta_producto_ref FOREIGN KEY (venta_producto_ref) REFERENCES ventaproductos(venta_producto_ref_key) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+SELECT @@version;
 #<----------------- /CREAR LA BASE DE DATOS CON SUS RESPECTIVAS TABLAS Y RELACIONES ---------->
 #<----------------- INSERTA REGISTROS DE PRUEBA A LAS TABLAS ---------->
 #INSERT INTO sucursales (nombre, direccion, telefono, activa) VALUES
