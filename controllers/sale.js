@@ -37,8 +37,7 @@ exports.getSales = async (req, res, next) => {
                     msg: 'No hay ventas en la base de datos'
                 }]
             });
-        }
-        else {
+        } else {
             return res.status(200).json({
                 msg: 'ventas adquiridas correctamente',
                 total: totalVentas,
@@ -54,8 +53,7 @@ exports.getSales = async (req, res, next) => {
                 value: ventas.rows
             });
         }
-    }
-    catch (error) {
+    } catch (error) {
         return res.status(500).json({
             errors: [{
                 value: error,
@@ -71,31 +69,40 @@ exports.getProductsSale = async (req, res, next) => {
         return res.status(422).json({
             errors:[{
             value: Object.keys(req.query).length,
-            msg: 'Los query params de la peticion no debe estar vacio',
+            msg: 'Los query params de la petición no debe estar vacío',
             location: "query"
             }]
         });
     }
-    const productSales = await ventaProducto.findAll({
-        attributes: {
-            exclude: ['producto_id']
-        },
-        where: {
-            venta_producto_ref_key: ref_key
-        },
-        include: Product
-    });
-    if (productSales && productSales.length > 0) {
-        return res.status(200).json({
-            msg: `Productos vendidos correspondientes a la venta: ${ref_key}`,
-            value: productSales
+    try {
+        const productSales = await ventaProducto.findAll({
+            attributes: {
+                exclude: ['producto_id']
+            },
+            where: {
+                venta_producto_ref_key: ref_key
+            },
+            include: Product
         });
-    }
-    else {
-        return res.status(404).json({
+        if (productSales && productSales.length > 0) {
+            return res.status(200).json({
+                msg: `Productos vendidos correspondientes a la venta: ${ref_key}`,
+                value: productSales
+            });
+        }
+        else {
+            return res.status(404).json({
+                errors: [{
+                    value: productSales,
+                    msg: 'No coincide ningún producto con esta ref_key'
+                }]
+            });
+        }
+    } catch (error) {
+        return res.status(500).json({
             errors: [{
-                value: productSales,
-                msg: 'No coincide ningun producto con esta ref_key'
+                value: error,
+                msg: 'Error intentando traer la venta'
             }]
         });
     }
@@ -112,50 +119,57 @@ exports.getSale = async (req, res, next) => {
                     saleId,
                     ref_key
                 },
-                msg: 'No se recibio ningun Sale Id ni tampoco ningún Sale Ref como query param'
+                msg: 'No se recibió ningún Sale Id ni tampoco ningún Sale Ref como query param'
             }]
         })
     }
-
-    if (ref_key && ref_key.length > 0) {
-        saleProductosByRef = await ventasTotal.findOne({
-            where: { venta_producto_ref: ref_key },
-            attributes: {
-                exclude: ['sucursal_id', 'user_id']
-            },
-            include: [Branch, User]
-        });
-    }
-    else if (saleId && saleId.length > 0) {
-        saleProductosById = await ventasTotal.findByPk(saleId, {
-            attributes: {
-                exclude: ['sucursal_id', 'user_id']
-            },
-            include: [Branch, User]
-        });
-    }
-
-    if (saleProductosByRef || saleProductosById) {
-        if (saleProductosByRef && !saleProductosById) {
-            return res.status(200).json({
-                msg: 'Venta adquirida correctamente por ref_key',
-                value: saleProductosByRef
+    try {
+        if (ref_key && ref_key.length > 0) {
+            saleProductosByRef = await ventasTotal.findOne({
+                where: { venta_producto_ref: ref_key },
+                attributes: {
+                    exclude: ['sucursal_id', 'user_id']
+                },
+                include: [Branch, User]
             });
         }
-        else /* if (!saleProductosByRef && saleProductosById) */ {
-            return res.status(200).json({
-                msg: 'Venta adquirida correctamente por id',
-                value: saleProductosById
+        else if (saleId && saleId.length > 0) {
+            saleProductosById = await ventasTotal.findByPk(saleId, {
+                attributes: {
+                    exclude: ['sucursal_id', 'user_id']
+                },
+                include: [Branch, User]
             });
         }
-    }
-    else {
-        return res.status(404).json({
+        if (saleProductosByRef || saleProductosById) {
+            if (saleProductosByRef && !saleProductosById) {
+                return res.status(200).json({
+                    msg: 'Venta adquirida correctamente por ref_key',
+                    value: saleProductosByRef
+                });
+            }
+            else /* if (!saleProductosByRef && saleProductosById) */ {
+                return res.status(200).json({
+                    msg: 'Venta adquirida correctamente por id',
+                    value: saleProductosById
+                });
+            }
+        }
+        else {
+            return res.status(404).json({
+                errors: [{
+                value: null,
+                msg: 'No coincide ninguna venta con la Referencia o con el Id'
+                }]
+            })
+        }
+    } catch (error) {
+        return res.status(500).json({
             errors: [{
-            value: null,
-            msg: 'No coincide ninguna venta con la Referencia o con el Id'
+                value: error,
+                msg: 'Error intentando traer la venta'
             }]
-        })
+        });
     }
 }
 
@@ -173,12 +187,12 @@ function promeseGetProducts(productos, ref_key) {
                 }
             }).then(product => {
                 if (!product) {
-                    return reject("No existe en el inventario un productro con esta Referencia o Id");
+                    return reject("No existe en el inventario un producto con esta Referencia o Id");
                 }
                 else
                 {
                     if (cantidad > product.cantidad) {
-                        return reject("No existe en el inventario esa catidad de productos para: " + product.referencia);
+                        return reject("No existe en el inventario esa cantidad de productos para: " + product.referencia);
                     }
                 }
                 let productSaleObj = {
@@ -213,7 +227,7 @@ exports.createSale = async (req, res, next) => {
         return res.status(422).json({
             errors:[{
             value: Object.keys(req.body).length,
-            msg: 'El cuerpo de la peticion no debe estar vacio y debe ser enviados todos los campos',
+            msg: 'El cuerpo de la petición no debe estar vacío y debe ser enviados todos los campos',
             location: "body"
             }]
         });
@@ -232,8 +246,8 @@ exports.createSale = async (req, res, next) => {
             errors: errors.array()
         });
     }
-    let ref_key = await crypto.randomBytes(6).toString('hex');
     try {
+        let ref_key = await crypto.randomBytes(6).toString('hex');
         let total = 0;
         let nowDate = Date.now() - desface;
         const productObj = await promeseGetProducts(productos, ref_key);
@@ -261,7 +275,7 @@ exports.createSale = async (req, res, next) => {
             });
             if (venta) {
                 return res.status(200).json({
-                    msg: 'Venta creada Correctamente',
+                    msg: 'Venta creada correctamente',
                     value: {
                         nombreCliente: nombreCliente.toLowerCase(),
                         correoCliente: correoCliente.toLowerCase(),
@@ -279,7 +293,7 @@ exports.createSale = async (req, res, next) => {
         return res.status(500).json({
             errors: [{
                 value: error,
-                msg: 'Error creando la venta, intente mas tarde'
+                msg: 'Error creando la venta, intente más tarde'
             }]
         });
     }
@@ -287,40 +301,49 @@ exports.createSale = async (req, res, next) => {
 
 exports.deleteSale = async (req, res, next) => {
     const saleId = req.params.saleId;
-    const sale = await ventasTotal.findByPk(saleId);
-    if (sale) {
-        const response = await sale.destroy();
-        if (response) {
-            const productSales = await ventaProducto.destroy({
-                where: {
-                    venta_producto_ref_key: response.venta_producto_ref
+    try {
+        const sale = await ventasTotal.findByPk(saleId);
+        if (sale) {
+            const response = await sale.destroy();
+            if (response) {
+                const productSales = await ventaProducto.destroy({
+                    where: {
+                        venta_producto_ref_key: response.venta_producto_ref
+                    }
+                });
+                if (productSales) {
+                    return res.status(200).json({
+                        msg: 'venta eliminada correctamente',
+                        value: response
+                    });
                 }
-            });
-            if (productSales) {
-                return res.status(200).json({
-                    msg: 'venta eliminada correctamente',
-                    value: response
+                return res.status(500).json({
+                    msg: 'Error intentando eliminar la venta',
+                    value: {
+                        products_sale: productSales
+                    }
                 });
             }
             return res.status(500).json({
                 msg: 'Error intentando eliminar la venta',
                 value: {
-                    products_sale: productSales
+                    sale: response
                 }
             });
         }
+        else {
+            return res.status(404).json({
+                errors: [{
+                value: sale,
+                msg: 'No coincide ninguna venta con este id'
+                }]
+            });
+        }
+    } catch (error) {
         return res.status(500).json({
-            msg: 'Error intentando eliminar la venta',
-            value: {
-                sale: response
-            }
-        });
-    }
-    else {
-        return res.status(404).json({
             errors: [{
-            value: sale,
-            msg: 'No coincide ninguna venta con este id'
+                value: error,
+                msg: 'Error eliminando la venta, intente más tarde'
             }]
         });
     }
