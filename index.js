@@ -48,7 +48,7 @@ app.use(helmet());
 app.use(compression());
 app.use(morgan('combined',{stream:accessLogStream}));
 
-app.set('port', process.env.PORT);
+app.set('port', process.env.PORT || 9000);
 app.use(bodyParser.json()); // application/json
 app.use(
   multer({ storage: fileStorage, fileFilter: fileFilter }).single('image')
@@ -56,15 +56,6 @@ app.use(
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use(cors({ origin: "*", allowedHeaders: "*", exposedHeaders: "*" }));
-/* app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader(
-        'Access-Control-Allow-Methods',
-        'OPTIONS, GET, POST, PUT, PATCH, DELETE'
-    );
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    next();
-}); */
 
 app.use('/api', userRoutes);
 app.use('/api', branchRoutes);
@@ -80,11 +71,10 @@ app.use(['/','/api'], (req, res, next)=>{
     });
 });
 
-sequelize.sync({force:true})
-//sequelize.sync({force:(process.env.RESET_DB === "true")})
+sequelize.sync({force:(process.env.RESET_DB === "true") || false})
 .then(() => {
     app.listen(app.get('port'), ()=>{
         console.log("Server running on port: ", app.get('port'));
     });
 })
-.catch(err => console.log(err) );
+.catch(err => console.log(err));
