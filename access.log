@@ -1,1 +1,5 @@
 
+::1 - - [06/Apr/2022:21:43:11 +0000] "GET / HTTP/1.1" 401 156 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36"
+::1 - - [06/Apr/2022:21:43:11 +0000] "GET /favicon.ico HTTP/1.1" 401 156 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36"
+::1 - - [06/Apr/2022:21:45:01 +0000] "GET / HTTP/1.1" 401 112 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36"
+::1 - - [06/Apr/2022:21:45:01 +0000] "GET /favicon.ico HTTP/1.1" 401 112 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36"

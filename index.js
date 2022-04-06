@@ -62,13 +62,10 @@ app.use('/api', branchRoutes);
 app.use('/api', productRoutes);
 app.use('/api', saleRoutes);
 app.use(['/','/api'], (req, res, next)=>{
-    return res.status(401).json({
-        name: 'STOCK REST API V.01',
-        errors: [{
-            msg: 'Endpoint no encontrado',
-            requirments: 'Necesitas un Token-Authorization para acceder a nuestros recursos'
-        }]
-    });
+    const error = new Error('STOCK REST API V.01');
+    error.statusCode = 401;
+    error.data = 'Necesitas autorización para acceder a nuestros recursos';
+    throw error;
 });
 app.use((error, req, res, next) => {
     const status = error.statusCode || 500;
