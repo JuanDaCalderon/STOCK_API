@@ -13,16 +13,14 @@ exports.getBranches = async (req, res, next) => {
         });
         let totalSucursales = sucursales.count;
         const lastPage = Math.ceil(totalSucursales / perPage);
-        if (sucursales == null || sucursales == undefined || sucursales.length <= 0) {
-            return res.status(404).json({
-                errors: [{
-                    value: sucursales,
-                    msg: 'No hay sucursales en la base de datos'
-                }]
-            });
+        if (sucursales == null || sucursales == undefined || sucursales.count <= 0) {
+            const error = new Error('No hay sucursales en la base de datos');
+            error.statusCode = 404;
+            error.data = sucursales;
+            throw error;
         } else {
             return res.status(200).json({
-                msg: 'Sucursales adquiridas correctamente',
+                message: 'Sucursales adquiridas correctamente',
                 total: totalSucursales,
                 current_page: currentPage,
                 per_page: perPage,
@@ -33,16 +31,12 @@ exports.getBranches = async (req, res, next) => {
                 previous_page: (currentPage <= 1) ? null : currentPage - 1,
                 from: (currentPage == 1) ? 1 : ((currentPage - 1) * perPage) + 1,
                 to: (currentPage == 1) ? perPage : (currentPage == lastPage) ? totalSucursales : ((currentPage - 1) * perPage) + perPage,
-                value: sucursales.rows
+                data: sucursales.rows
             });
         }
     } catch (error) {
-        return res.status(500).json({
-            errors: [{
-                value: error,
-                msg: 'Error intentando traer las sucursales'
-            }]
-        });
+        if (!error.statusCode) error.statusCode = 500;
+        next(error);
     }
 }
 
@@ -52,24 +46,18 @@ exports.getBranch =  async (req, res, next) => {
         const sucursal = await Branch.findByPk(sucursalId);
         if (sucursal) {
             return res.status(200).json({
-                msg: 'Sucursal adquirida correctamente',
-                value: sucursal
+                message: 'Sucursal adquirida correctamente',
+                data: sucursal
             });
         } else {
-            return res.status(404).json({
-                errors: [{
-                    value: sucursal,
-                    msg: 'No coincide ninguna sucursal con este id'
-                }]
-            });
+            const error = new Error('No coincide ninguna sucursal con este id');
+            error.statusCode = 404;
+            error.data = sucursal;
+            throw error;
         }
     } catch (error) {
-        return res.status(500).json({
-            errors: [{
-                value: error,
-                msg: 'Error intentando traer la sucursal'
-            }]
-        });
+        if (!error.statusCode) error.statusCode = 500;
+        next(error);
     }
 }
 
@@ -77,18 +65,15 @@ exports.createBranch = async (req, res, next) => {
     const {nombre, direccion, telefono} = req.body;
     const errors = validationResult(req);
     if (!Object.keys(req.body).length || Object.keys(req.body).length < 3) {
-        return res.status(422).json({
-            errors: [{
-                value: Object.keys(req.body).length,
-                msg: 'El cuerpo de la petición no debe estar vacío y debe ser enviados todos los campos',
-                location: "body"
-            }]
-        });
+        const error = new Error('El cuerpo de la petición no debe estar vacío y debe ser enviados todos los campos');
+        error.statusCode = 422;
+        throw error;
     }
     if (!errors.isEmpty()) {
-        return res.status(422).json({
-            errors: errors.array()
-        });
+        const error = new Error('La validación de los campos fallo');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
     }
     try {
         let s3Response = null;
@@ -102,24 +87,17 @@ exports.createBranch = async (req, res, next) => {
         });
         if (response) {
             return res.status(201).json({
-                msg: 'Sucursal creada satisfactoriamente',
-                value: response
+                message: 'Sucursal creada satisfactoriamente',
+                data: response
             });
         } else {
-            return res.status(500).json({
-                errors: [{
-                    value: response,
-                    msg: 'Error creando la sucursal, intente más tarde'
-                }]
-            });
+            const error = new Error('Error creando la sucursal, intente más tarde');
+            error.data = response;
+            throw error;
         }
     } catch (error) {
-        return res.status(500).json({
-            errors: [{
-                value: error,
-                msg: 'Error intentando crear la sucursal'
-            }]
-        });
+        if (!error.statusCode) error.statusCode = 500;
+        next(error);
     }
 }
 
@@ -128,19 +106,16 @@ exports.editBranch = async (req, res, next) => {
     const errors = validationResult(req);
     if (!req.file) {
         if (!Object.keys(req.body).length) {
-            return res.status(422).json({
-                errors: [{
-                    value: Object.keys(req.body).length,
-                    msg: 'El cuerpo de la petición no debe estar vacío',
-                    location: "body"
-                }]
-            });
+            const error = new Error('El cuerpo de la petición no debe estar vacío');
+            error.statusCode = 422;
+            throw error;
         }
     }
     if (!errors.isEmpty()) {
-        return res.status(422).json({
-            errors: errors.array()
-        });
+        const error = new Error('La validación de los campos fallo');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
     }
 
     try {
@@ -154,8 +129,8 @@ exports.editBranch = async (req, res, next) => {
                 branch.nombre = nombre;
             } else {
                 let error = {
-                    value: nombre,
-                    msg: 'El nombre debe tener mínimo 8 caracteres',
+                    data: nombre,
+                    message: 'El nombre debe tener mínimo 8 caracteres',
                     param: "nombre",
                     location: "body"
                 }
@@ -169,8 +144,8 @@ exports.editBranch = async (req, res, next) => {
                 branch.direccion = direccion;
             } else {
                 let error = {
-                    value: direccion,
-                    msg: 'La dirección debe tener mínimo 10 caracteres',
+                    data: direccion,
+                    message: 'La dirección debe tener mínimo 10 caracteres',
                     param: "direccion",
                     location: "body"
                 }
@@ -184,8 +159,8 @@ exports.editBranch = async (req, res, next) => {
                 branch.telefono = telefono;
             } else {
                 let error = {
-                    value: telefono,
-                    msg: 'El número de teléfono debe contener al menos 7 dígitos',
+                    data: telefono,
+                    message: 'El número de teléfono debe contener al menos 7 dígitos',
                     param: "telefono",
                     location: "body"
                 }
@@ -197,8 +172,8 @@ exports.editBranch = async (req, res, next) => {
                 branch.activa = activa;
             } else {
                 let error = {
-                    value: activa,
-                    msg: 'El campo "activa" debe ser un boolean',
+                    data: activa,
+                    message: 'El campo "activa" debe ser un boolean',
                     param: "telefono",
                     location: "body"
                 }
@@ -211,24 +186,21 @@ exports.editBranch = async (req, res, next) => {
             branch.imagen = s3Response.Location;
         }
         if (errorsVal.length > 0) {
-            return res.status(422).json({
-                errors: errorsVal
-            });
+            const error = new Error();
+            error.statusCode = 422;
+            error.data = errorsVal;
+            throw error;
         }
         const response = await branch.save();
         if (response) {
             return res.status(201).json({
-                msg: 'Sucursal actualizada correctamente',
-                value: response
+                message: 'Sucursal actualizada correctamente',
+                data: response
             });
         }
     } catch (error) {
-        return res.status(500).json({
-            errors: [{
-                msg: 'Error intentando actualizar la sucursal',
-                value: response
-            }]
-        });
+        if (!error.statusCode) error.statusCode = 500;
+        next(error);
     }
 }
 
@@ -240,25 +212,19 @@ exports.deleteBranch =  async (req, res, next) => {
             const response = await sucursal.destroy();
             if (response) {
                 return res.status(200).json({
-                    msg: 'Sucursal eliminada correctamente',
-                    value: response
+                    message: 'Sucursal eliminada correctamente',
+                    data: response
                 });
             }
         }
         else {
-            return res.status(404).json({
-                errors: [{
-                value: sucursal,
-                msg: 'No coincide ninguna sucursal con este id'
-                }]
-            });
+            const error = new Error('No coincide ninguna sucursal con este id');
+            error.statusCode = 404;
+            error.data = sucursal;
+            throw error;
         }
     } catch (error) {
-        return res.status(500).json({
-            errors: [{
-                msg: 'Error intentando eliminar la sucursal',
-                value: response
-            }]
-        });
+        if (!error.statusCode) error.statusCode = 500;
+        next(error);
     }
 }

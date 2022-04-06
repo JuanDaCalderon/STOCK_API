@@ -70,6 +70,17 @@ app.use(['/','/api'], (req, res, next)=>{
         }]
     });
 });
+app.use((error, req, res, next) => {
+    const status = error.statusCode || 500;
+    const message = error.message || 'Error intentando traer el recurso';
+    const data = error.data || null;
+    res.status(status).json({
+        errors: [{
+            data: data,
+            message: message
+        }]
+    });
+});
 
 sequelize.sync({force:(process.env.RESET_DB === "true") || false})
 .then(() => {
