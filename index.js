@@ -29,6 +29,10 @@ const fileStorage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
+    const fileSize = parseInt(req.headers['content-length']);
+    if (fileSize > 2097152) {
+        cb(null, false);
+    }
     if (
         file.mimetype === 'image/png' ||
         file.mimetype === 'image/jpg' ||
@@ -51,7 +55,13 @@ app.use(morgan('combined',{stream:accessLogStream}));
 app.set('port', process.env.PORT || 9000);
 app.use(bodyParser.json()); // application/json
 app.use(
-  multer({ storage: fileStorage, fileFilter: fileFilter }).single('image')
+    multer({
+        storage: fileStorage,
+        limits: {
+            fileSize: 2097152, // 2 Mb
+        },
+        fileFilter: fileFilter
+    }).single('image')
 );
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
