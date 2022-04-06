@@ -17,17 +17,15 @@ exports.getProducts = async (req, res, next) => {
         });
         let totalProductos = productos.count;
         const lastPage= Math.ceil(totalProductos/perPage);
-        if (productos == null || productos == undefined || productos.length <= 0) {
-            return res.status(404).json({
-                errors: [{
-                value: productos,
-                msg: 'No hay productos en la base de datos'
-                }]
-            });
+        if (productos == null || productos == undefined || productos.count <= 0) {
+            const error = new Error('No hay productos en la base de datos');
+            error.statusCode = 404;
+            error.data = productos;
+            throw error;
         }
         else {
             return res.status(200).json({
-                msg: 'Productos adquiridas correctamente',
+                message: 'Productos adquiridas correctamente',
                 total: totalProductos,
                 current_page: currentPage,
                 per_page: perPage,
@@ -38,17 +36,13 @@ exports.getProducts = async (req, res, next) => {
                 previous_page: (currentPage <= 1) ? null : currentPage - 1,
                 from: (currentPage == 1) ? 1 : ((currentPage - 1) * perPage) + 1,
                 to: (currentPage == 1) ? perPage : (currentPage == lastPage) ? totalProductos : ((currentPage - 1) * perPage) + perPage,
-                value: productos.rows
+                data: productos.rows
             });
         }
     }
     catch (error) {
-        return res.status(500).json({
-            errors: [{
-                value: error,
-                msg: 'Error intentando traer los productos'
-            }]
-        });
+        if (!error.statusCode) error.statusCode = 500;
+        next(error);
     }
 }
 
@@ -62,12 +56,9 @@ exports.getProduct = async (req, res, next) => {
     let totalProductos;
     let lastPage;
     if (!productId && !productRef) {
-        return res.status(422).json({
-            errors: [{
-            value: {productId,productRef},
-            msg: 'No se recibió ningún Product Id ni tampoco ningún Product Ref'
-            }]
-        })
+        const error = new Error('No se recibió ningún Product Id ni tampoco ningún Product Ref');
+        error.statusCode = 422;
+        throw error;
     }
     try {
         if (productRef && productRef.length > 0) {
@@ -95,7 +86,7 @@ exports.getProduct = async (req, res, next) => {
             if (productoByRef && !productoById) {
                 if (totalProductos > 1) {
                     return res.status(200).json({
-                        msg: 'Productos adquiridos correctamente por referencia',
+                        message: 'Productos adquiridos correctamente por referencia',
                         total: totalProductos,
                         current_page: currentPage,
                         per_page: perPage,
@@ -106,59 +97,41 @@ exports.getProduct = async (req, res, next) => {
                         previous_page: (currentPage <= 1) ? null : currentPage - 1,
                         from: (currentPage == 1) ? 1 : ((currentPage - 1) * perPage) + 1,
                         to: (currentPage == 1) ? perPage : (currentPage == lastPage) ? totalProductos : ((currentPage - 1) * perPage) + perPage,
-                        value: productoByRef.rows
+                        data: productoByRef.rows
                     });
                 }
                 else
                 {
                     return res.status(200).json({
-                        msg: 'Producto adquirido correctamente por referencia',
-                        value: productoByRef.rows[0]
+                        message: 'Producto adquirido correctamente por referencia',
+                        data: productoByRef.rows[0]
                     });
                 }
             }
             else if (!productoByRef && productoById) {
                 return res.status(200).json({
-                    msg: 'Producto adquirido correctamente por id',
-                    value: productoById
-                });
-            }
-            else {
-                return res.status(200).json({
-                    msg: 'Producto adquirido correctamente',
-                    value_productoById: productoById,
-                    value_productoByRef: productoByRef
+                    message: 'Producto adquirido correctamente por id',
+                    data: productoById
                 });
             }
         }
         else {
-            return res.status(404).json({
-                errors: [{
-                value: null,
-                msg: 'No coincide ningún producto con la Referencia o con el Id'
-                }]
-            })
+            const error = new Error('No coincide ningún producto con la Referencia o con el Id');
+            error.statusCode = 422;
+            throw error;
         }
     } catch (error) {
-        return res.status(500).json({
-            errors: [{
-                value: error,
-                msg: 'Error intentando el producto'
-            }]
-        });
+        if (!error.statusCode) error.statusCode = 500;
+        next(error);
     }
 }
 
 exports.createProduct = async (req, res, next) => {
     const {nombre, descripcion, cantidad, marca, talla, categoria, sucursal, referencia, precioMinimo} = req.body;
     if (!Object.keys(req.body).length || Object.keys(req.body).length < 9) {
-        return res.status(422).json({
-            errors:[{
-            value: Object.keys(req.body).length,
-            msg: 'El cuerpo de la petición no puede estar vacío y deben ser enviados todos los campos',
-            location: "body"
-            }]
-        });
+        const error = new Error('El cuerpo de la petición no puede estar vacío y deben ser enviados todos los campos');
+        error.statusCode = 422;
+        throw error;
     }
     try {
         const productData = {
@@ -181,17 +154,13 @@ exports.createProduct = async (req, res, next) => {
             include: Branch
         });
         return res.status(201).json({
-            msg: 'producto creado satisfactoriamente',
-            value: recentProduct,
+            message: 'producto creado satisfactoriamente',
+            data: recentProduct,
         });
     }
     catch (error) {
-        return res.status(500).json({
-            errors: [{
-                value: error,
-                msg: 'Error intentando crear el producto'
-            }]
-        });
+        if (!error.statusCode) error.statusCode = 500;
+        next(error);
     }
 }
 
@@ -199,18 +168,15 @@ exports.editProduct = async (req, res, next) => {
     const {nombre, descripcion, cantidad, marca, talla, categoria, sucursal, referencia, precioMinimo, disponible} = req.body;
     const errors = validationResult(req);
     if (!Object.keys(req.body).length) {
-        return res.status(422).json({
-            errors:[{
-            value: Object.keys(req.body).length,
-            msg: 'El cuerpo de la petición no debe estar vacio',
-            location: "body"
-            }]
-        });
+        const error = new Error('El cuerpo de la petición no debe estar vacio');
+        error.statusCode = 422;
+        throw error;
     }
     if (!errors.isEmpty()) {
-        return res.status(422).json({
-            errors: errors.array()
-        });
+        const error = new Error('La validación de los campos fallo');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
     }
     try {
         const product = req.productDoc;
@@ -246,8 +212,8 @@ exports.editProduct = async (req, res, next) => {
             if (validator.isBoolean(disponible.toString())) { product.disponible = disponible; }
             else {
             let error = {
-                value: disponible,
-                msg: 'El campo "disponible" debe ser un boolean',
+                data: disponible,
+                message: 'El campo "disponible" debe ser un boolean',
                 param: "disponible",
                 location: "body"
             }
@@ -255,9 +221,10 @@ exports.editProduct = async (req, res, next) => {
             }
         }
         if (errorsVal.length > 0) {
-            return res.status(422).json({
-                errors: errorsVal
-            });
+            const error = new Error();
+            error.statusCode = 422;
+            error.data = errorsVal;
+            throw error;
         }
         const response = await product.save();
         const recentProduct = await Product.findByPk(response.id, {
@@ -268,25 +235,17 @@ exports.editProduct = async (req, res, next) => {
         });
         if (response && recentProduct) {
             return res.status(201).json({
-                msg: 'Producto actualizado correctamente',
-                value: recentProduct
+                message: 'Producto actualizado correctamente',
+                data: recentProduct
             });
         }
         else {
-            return res.status(500).json({
-                errors: [{
-                    msg: 'Error intentando actualizar el producto',
-                    value: recentProduct
-                }]
-            });
+            const error = new Error('Error intentando actualizar el producto');
+            throw error;
         }
     } catch (error) {
-        return res.status(500).json({
-            errors: [{
-                value: error,
-                msg: 'Error intentando actualizar el producto'
-            }]
-        });
+        if (!error.statusCode) error.statusCode = 500;
+        next(error);
     }
 }
 
@@ -298,25 +257,19 @@ exports.deleteProduct = async(req, res, next) => {
             const response = await producto.destroy();
             if (response) {
                 return res.status(200).json({
-                    msg: 'Producto Eliminado correctamente',
-                    value: response
+                    message: 'Producto Eliminado correctamente',
+                    data: response
                 });
             }
         }
         else {
-            return res.status(404).json({
-                errors: [{
-                value: producto,
-                msg: 'No coincide ningún producto con este id'
-                }]
-            });
+            const error = new Error('No coincide ningún producto con este id');
+            error.statusCode = 404;
+            error.data = producto;
+            throw error;
         }
     } catch (error) {
-        return res.status(500).json({
-            errors: [{
-                value: error,
-                msg: 'Error intentando eliminar el producto'
-            }]
-        });
+        if (!error.statusCode) error.statusCode = 500;
+        next(error);
     }
 }
