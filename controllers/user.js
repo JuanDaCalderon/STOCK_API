@@ -24,17 +24,15 @@ exports.getUsers = async (req, res, next) => {
     });
     let totalUsers = users.count;
     const lastPage= Math.ceil(totalUsers/perPage);
-    if (users == null || users == undefined || users.length <= 0) {
-      return res.status(404).json({
-        errors: [{
-          value: users,
-          msg: 'No hay usuarios en la base de datos'
-        }]
-      });
+    if (users == null || users == undefined || users.count <= 0) {
+      const error = new Error('No hay usuarios en la base de datos');
+      error.statusCode = 404;
+      error.data = users;
+      throw error;
     }
     else {
       return res.status(200).json({
-        msg: 'Usuarios adquiridos correctamente',
+        message: 'Usuarios adquiridos correctamente',
         total: totalUsers,
         current_page: currentPage,
         per_page: perPage,
@@ -45,16 +43,12 @@ exports.getUsers = async (req, res, next) => {
         previous_page: (currentPage <= 1) ? null : currentPage - 1,
         from: (currentPage == 1) ? 1 : ((currentPage - 1) * perPage) + 1,
         to: (currentPage == 1) ? perPage : (currentPage == lastPage) ? totalUsers : ((currentPage - 1) * perPage) + perPage,
-        value: users.rows
+        data: users.rows
       });
     }
   } catch (error) {
-    return res.status(500).json({
-      errors: [{
-        value: error,
-        msg: 'Error intentando traer los usuarios'
-      }]
-    });
+    if (!error.statusCode) error.statusCode = 500;
+    next(error);
   }
 }
 
@@ -69,25 +63,19 @@ exports.getUser = async (req, res, next) => {
     });
     if (user) {
       return res.status(200).json({
-        msg: 'Usuario adquirido correctamente',
-        value: user
+        message: 'Usuario adquirido correctamente',
+        data: user
       });
     }
     else {
-      return res.status(404).json({
-        errors: [{
-          value: user,
-          msg: 'No coincide ningún usuario con este id'
-        }]
-      });
+      const error = new Error('No coincide ningún usuario con este id');
+      error.statusCode = 404;
+      error.data = user;
+      throw error;
     }
   } catch (error) {
-    return res.status(500).json({
-      errors: [{
-        value: error,
-        msg: 'Error intentando traer el usuario'
-      }]
-    });
+    if (!error.statusCode) error.statusCode = 500;
+    next(error);
   }
 }
 
@@ -97,21 +85,17 @@ exports.createUser = async (req, res, next) => {
   /* If validators */
   if (!req.file){
     if (!Object.keys(req.body).length || Object.keys(req.body).length < 9) {
-      return res.status(422).json({
-        errors:[{
-          value: Object.keys(req.body).length,
-          msg: 'El cuerpo de la petición no debe estar vacío y debe ser enviados todos los campos',
-          location: "body"
-        }]
-      });
+      const error = new Error('El cuerpo de la petición no debe estar vacío y debe ser enviados todos los campos');
+      error.statusCode = 422;
+      throw error;
     }
   }
   if (!errors.isEmpty()) {
-    return res.status(422).json({
-      errors: errors.array()
-    });
+    const error = new Error('La validación de los campos fallo');
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
   }
-  /* it will create the user */
   try {
     let hashPassword = await bcrypt.hash("000000", 10);
     let s3Response = null;
@@ -151,8 +135,8 @@ exports.createUser = async (req, res, next) => {
             include: Branch
         });
         return res.status(201).json({
-          msg: 'usuario creado satisfactoriamente (La contraseña debe ser cambiada por el usuario)',
-          value: recentUser
+          message: 'usuario creado satisfactoriamente (La contraseña debe ser cambiada por el usuario)',
+          data: recentUser
         });
     } else {
         const response = await User.create(userData);
@@ -163,17 +147,13 @@ exports.createUser = async (req, res, next) => {
             include: Branch
         });
         return res.status(201).json({
-          msg: 'usuario creado satisfactoriamente (La contraseña debe ser cambiada por el usuario)',
-          value: recentUser,
+          message: 'usuario creado satisfactoriamente (La contraseña debe ser cambiada por el usuario)',
+          data: recentUser,
         });
     }
   } catch (error) {
-    return res.status(500).json({
-      errors: [{
-        value: error,
-        msg: 'Error intentando crear el usuario'
-      }]
-    });
+    if (!error.statusCode) error.statusCode = 500;
+    next(error);
   }
 }
 
@@ -181,18 +161,15 @@ exports.authUser = async (req, res, next) => {
   const {email, password} = req.body;
   const errors = validationResult(req);
   if (!Object.keys(req.body).length || Object.keys(req.body).length < 2) {
-    return res.status(422).json({
-      errors:[{
-        value: Object.keys(req.body).length,
-        msg: 'El cuerpo de la petición no debe estar vacío y debe ser enviados todos los campos (Email y Contraseña)',
-        location: "body"
-      }]
-    });
+    const error = new Error('El cuerpo de la petición no debe estar vacío y debe ser enviados todos los campos (Email y Contraseña)');
+    error.statusCode = 422;
+    throw error;
   }
   if (!errors.isEmpty()) {
-    return res.status(422).json({
-      errors: errors.array()
-    });
+    const error = new Error('La validación de los campos fallo');
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
   }
   try {
     const user = await User.findOne({
@@ -221,42 +198,32 @@ exports.authUser = async (req, res, next) => {
           delete objResponse.reset_token;
           delete objResponse.reset_token_expiration;
           return res.status(200).json({
-            msg: "Inicio de sesión exitoso",
+            message: "Inicio de sesión exitoso",
             token: token,
-            value: objResponse
+            data: objResponse
           });
         }
         else {
-            return res.status(403).json({
-              errors:[{
-                value: user.correo,
-                msg: 'Contraseña incorrecta, intente de nuevo'
-              }]
-            });
+          const error = new Error('Contraseña incorrecta, intente de nuevo');
+          error.statusCode = 403;
+          error.data = user.correo;
+          throw error;
         }
       } else {
-          return res.status(422).json({
-            errors:[{
-              value: user.correo,
-              msg: 'La contraseña está siendo recibida como undefined o null'
-            }]
-          });
+        const error = new Error('La contraseña está siendo recibida como undefined o null');
+        error.statusCode = 422;
+        error.data = user.correo;
+        throw error;
       }
     } else {
-      return res.status(404).json({
-        errors:[{
-          value: user,
-          msg: 'No existe ningún usuario registrado en la base de datos con este correo'
-        }]
-      });
+      const error = new Error('No existe ningún usuario registrado en la base de datos con este correo');
+      error.statusCode = 404;
+      error.data = user;
+      throw error;
     }
   } catch (error) {
-    return res.status(500).json({
-      errors: [{
-        value: error,
-        msg: 'Error intentando autenticar el usuario'
-      }]
-    });
+    if (!error.statusCode) error.statusCode = 500;
+    next(error);
   }
 }
 
@@ -264,19 +231,15 @@ exports.resetUser = (req, res, next) => {
   const { email } = req.query;
   const errors = validationResult(req);
   if (!email) {
-    return res.status(422).json({
-      errors:[{
-        value: email,
-        msg: 'El email del usuario no ha sido adquirido como query param (Probablemente este vacío)',
-        param: 'email',
-        location: "query"
-      }]
-    });
+    const error = new Error('El email del usuario no ha sido adquirido como query param (Probablemente este vacío)');
+    error.statusCode = 422;
+    throw error;
   }
   if (!errors.isEmpty()) {
-    return res.status(422).json({
-      errors: errors.array()
-    });
+    const error = new Error('La validación de los campos fallo');
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
   }
   let ResetUrl = process.env.RESET_PASSWORD_URL;
   let hoy = new Date();
@@ -636,24 +599,20 @@ exports.resetUser = (req, res, next) => {
         try {
             const mail = await sgMail.send(msg);
             return res.status(200).json({
-              msg: "Se ha enviado un correo a tu email para recuperar tu contraseña",
-              value: user,
+              message: "Se ha enviado un correo a tu email para recuperar tu contraseña",
+              data: user,
               email: mail
             });
         } catch (error) {
-          return res.status(500).json({
-            msg: "Hubo un error intentando enviar el correo de recuperación, por favor intenta de nuevo en unos minutos",
-            value: error.response
-          });
+          if (!error.statusCode) error.statusCode = 500;
+          error.message = 'Hubo un error intentando enviar el correo de recuperación, por favor intenta de nuevo en unos minutos';
+          error.data = error.response;
+          next(error);
         }
       }
     } catch (error) {
-      return res.status(500).json({
-        errors: [{
-          value: error,
-          msg: 'Error intentando enviar el correo'
-        }]
-      });
+      if (!error.statusCode) error.statusCode = 500;
+      next(error);
     }
   });
 }
@@ -663,19 +622,16 @@ exports.editUser = async (req, res, next) => {
   const errors = validationResult(req);
   if (!req.file) {
     if (!Object.keys(req.body).length) {
-      return res.status(422).json({
-        errors: [{
-          value: Object.keys(req.body).length,
-          msg: 'El cuerpo de la petición no debe estar vacío',
-          location: "body"
-        }]
-      });
+      const error = new Error('El cuerpo de la petición no debe estar vacío');
+      error.statusCode = 422;
+      throw error;
     }
   }
   if (!errors.isEmpty()) {
-    return res.status(422).json({
-      errors: errors.array()
-    });
+    const error = new Error('La validación de los campos fallo');
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
   }
   try {
     const hoy = new Date();
@@ -704,50 +660,36 @@ exports.editUser = async (req, res, next) => {
               const response = await userToken.save();
               if(response){
                 return res.status(201).json({
-                  msg: "Contraseña correctamente actualizada",
-                  value: response
+                  message: "Contraseña correctamente actualizada",
+                  data: response
                 });
               }
             }
             else {
-              return res.status(422).json({
-                errors: [{
-                  value: "*********",
-                  msg: 'Contraseña muy débil',
-                  requirements: 'La contraseña debe tener mínimo 8 caracteres, 1 minúscula, 1 mayúscula, 1 número y 1 símbolo',
-                  param: "password",
-                  location: "body"
-                }]
-              });
+              const error = new Error('La contraseña debe tener mínimo 8 caracteres, 1 minúscula, 1 mayúscula, 1 número y 1 símbolo');
+              error.statusCode = 422;
+              error.data = userToken;
+              throw error;
             }
           }
           else {
-            return res.status(422).json({
-              errors: [{
-                value: req.body.password,
-                msg: 'La nueva contraseña no ha sido recibida o está vacía',
-                param: "password",
-                location: "body"
-              }],
-            });
+            const error = new Error('La nueva contraseña no ha sido recibida o está vacía');
+            error.statusCode = 422;
+            throw error;
           }
         }
         else {
-          return res.status(403).json({
-            errors: [{
-              value: userToken,
-              msg: 'Ha expirado el tiempo del token, debes generar uno nuevo'
-            }]
-          });
+          const error = new Error('Ha expirado el tiempo del token, debes generar uno nuevo');
+          error.statusCode = 403;
+          error.data = userToken;
+          throw error;
         }
       }
       else {
-        return res.status(401).json({
-          errors: [{
-            value: userToken,
-            msg: 'el Token de acceso es incorrecto'
-          }]
-        });
+        const error = new Error('el Token de acceso es incorrecto');
+        error.statusCode = 401;
+        error.data = userToken;
+        throw error;
       }
     }
     else {
@@ -765,8 +707,8 @@ exports.editUser = async (req, res, next) => {
         }
         else {
           let error = {
-            value: email,
-            msg: 'Formato de Email Invalido',
+            data: email,
+            message: 'Formato de Email Invalido',
             param: "email",
             location: "body"
           }
@@ -777,8 +719,8 @@ exports.editUser = async (req, res, next) => {
         if (validator.isLength(telefono, { min: 9 })) { user.celular = telefono; }
         else {
           let error = {
-            value: telefono,
-            msg: 'El número de teléfono debe contener al menos 10 dígitos',
+            data: telefono,
+            message: 'El número de teléfono debe contener al menos 10 dígitos',
             param: "telefono",
             location: "body"
           }
@@ -792,8 +734,8 @@ exports.editUser = async (req, res, next) => {
         }
         else {
           let error = {
-            value: "*********",
-            msg: 'Contraseña muy debil',
+            data: "*********",
+            message: 'Contraseña muy debil',
             requirements: 'La contraseña debe tener mínimo 8 caracteres, 1 minúscula, 1 mayúscula, 1 número y 1 símbolo',
             param: "password",
             location: "body"
@@ -805,8 +747,8 @@ exports.editUser = async (req, res, next) => {
         if (validator.isLength(nombre, { min: 12 })) { user.nombre = nombre; }
         else {
           let error = {
-            value: nombre,
-            msg: 'El nombre debe tener mínimo 12 caracteres',
+            data: nombre,
+            message: 'El nombre debe tener mínimo 12 caracteres',
             param: "nombre",
             location: "body"
           }
@@ -823,8 +765,8 @@ exports.editUser = async (req, res, next) => {
         if (validator.isBoolean(admin.toString())) { user.administrador = admin; }
         else {
           let error = {
-            value: admin,
-            msg: 'El campo "admin" debe ser un boolean',
+            data: admin,
+            message: 'El campo "admin" debe ser un boolean',
             param: "admin",
             location: "body"
           }
@@ -835,8 +777,8 @@ exports.editUser = async (req, res, next) => {
         if (validator.isBoolean(activo.toString())) { user.activo = activo; }
         else {
           let error = {
-            value: activo,
-            msg: 'El campo "activo" debe ser un boolean',
+            data: activo,
+            message: 'El campo "activo" debe ser un boolean',
             param: "activo",
             location: "body"
           }
@@ -856,9 +798,10 @@ exports.editUser = async (req, res, next) => {
       }
       /* RETURN ERRORS */
       if (errors.length > 0) {
-        return res.status(422).json({
-          errors: errors
-        });
+        const error = new Error();
+        error.statusCode = 422;
+        error.data = errors;
+        throw error;
       }
       const response = await user.save();
       const recentUser = await User.findByPk(userId, {
@@ -869,25 +812,18 @@ exports.editUser = async (req, res, next) => {
       });
       if (response) {
         return res.status(201).json({
-          msg: 'usuario Actualizado correctamente',
-          value: recentUser
+          message: 'usuario Actualizado correctamente',
+          data: recentUser
         });
       } else {
-        return res.status(500).json({
-          errors: [{
-            msg: 'Error intentando actualizar el usuario',
-            value: response
-          }]
-        });
+        const error = new Error();
+        error.data = response;
+        throw error;
       }
     }
   } catch (error) {
-    return res.status(500).json({
-      errors: [{
-        value: error,
-        msg: 'Error intentando editar el usuario'
-      }]
-    });
+    if (!error.statusCode) error.statusCode = 500;
+    next(error);
   }
 }
 
@@ -909,25 +845,19 @@ exports.deleteUser = async (req, res, next) => {
           });
           if (response) {
             return res.status(200).json({
-              msg: 'Usuario eliminado correctamente',
-              value: response
+              message: 'Usuario eliminado correctamente',
+              data: response
             });
           }
       }
       else {
-        return res.status(404).json({
-          errors: [{
-            value: user,
-            msg: 'No coincide ningún usuario con este id'
-          }]
-        });
+        const error = new Error('No coincide ningún usuario con este id');
+        error.statusCode = 404;
+        error.data = user;
+        throw error;
       }
     } catch (error) {
-      return res.status(500).json({
-        errors: [{
-          value: error,
-          msg: 'Error intentando eliminar el usuario'
-        }]
-      });
+      if (!error.statusCode) error.statusCode = 500;
+      next(error);
     }
 }
