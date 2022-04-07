@@ -206,10 +206,10 @@ exports.createSale = async (req, res, next) => {
         throw error;
     }
     if (!errors.isEmpty()) {
-        const error = new Error('La validación de los campos fallo');
-        error.statusCode = 422;
-        error.data = errors.array();
-        throw error;
+        return res.status(422).json({
+            message: 'La validación de los campos fallo',
+            data: errors.array()
+        });
     }
     try {
         let ref_key = crypto.randomBytes(6).toString('hex');

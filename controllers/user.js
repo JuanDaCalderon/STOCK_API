@@ -91,10 +91,10 @@ exports.createUser = async (req, res, next) => {
     }
   }
   if (!errors.isEmpty()) {
-    const error = new Error('La validación de los campos fallo');
-    error.statusCode = 422;
-    error.data = errors.array();
-    throw error;
+    return res.status(422).json({
+      message: 'La validación de los campos fallo',
+      data: errors.array()
+    });
   }
   try {
     let hashPassword = await bcrypt.hash("000000", 10);
@@ -166,10 +166,10 @@ exports.authUser = async (req, res, next) => {
     throw error;
   }
   if (!errors.isEmpty()) {
-    const error = new Error('La validación de los campos fallo');
-    error.statusCode = 422;
-    error.data = errors.array();
-    throw error;
+    return res.status(422).json({
+      message: 'La validación de los campos fallo',
+      data: errors.array()
+    });
   }
   try {
     const user = await User.findOne({
@@ -236,10 +236,10 @@ exports.resetUser = (req, res, next) => {
     throw error;
   }
   if (!errors.isEmpty()) {
-    const error = new Error('La validación de los campos fallo');
-    error.statusCode = 422;
-    error.data = errors.array();
-    throw error;
+    return res.status(422).json({
+      message: 'La validación de los campos fallo',
+      data: errors.array()
+    });
   }
   let ResetUrl = process.env.RESET_PASSWORD_URL;
   let hoy = new Date();
@@ -627,10 +627,10 @@ exports.editUser = async (req, res, next) => {
     }
   }
   if (!errors.isEmpty()) {
-    const error = new Error('La validación de los campos fallo');
-    error.statusCode = 422;
-    error.data = errors.array();
-    throw error;
+    return res.status(422).json({
+      message: 'La validación de los campos fallo',
+      data: errors.array()
+    });
   }
   try {
     const hoy = new Date();
