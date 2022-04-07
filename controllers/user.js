@@ -86,14 +86,18 @@ exports.createUser = async (req, res, next) => {
   if (!req.file){
     if (!Object.keys(req.body).length || Object.keys(req.body).length < 9) {
       return res.status(422).json({
-        message: 'El cuerpo de la petición no debe estar vacío'
+        errors: [{
+          message: 'El cuerpo de la petición no debe estar vacío'
+        }]
       });
     }
   }
   if (!errors.isEmpty()) {
     return res.status(422).json({
-      message: 'La validación de los campos fallo',
-      data: errors.array()
+      errors: [{
+        message: 'La validación de los campos fallo',
+        data: errors.array()
+      }]
     });
   }
   try {
@@ -162,13 +166,17 @@ exports.authUser = async (req, res, next) => {
   const errors = validationResult(req);
   if (!Object.keys(req.body).length || Object.keys(req.body).length < 2) {
     return res.status(422).json({
-      message: 'El cuerpo de la petición no debe estar vacío'
+      errors: [{
+        message: 'El cuerpo de la petición no debe estar vacío'
+      }]
     });
   }
   if (!errors.isEmpty()) {
     return res.status(422).json({
-      message: 'La validación de los campos fallo',
-      data: errors.array()
+      errors: [{
+        message: 'La validación de los campos fallo',
+        data: errors.array()
+      }]
     });
   }
   try {
@@ -232,13 +240,17 @@ exports.resetUser = (req, res, next) => {
   const errors = validationResult(req);
   if (!email) {
     return res.status(422).json({
-      message: 'El email del usuario no ha sido adquirido como query param (Probablemente este vacío)'
+      errors: [{
+        message: 'El email del usuario no ha sido adquirido como query param (Probablemente este vacío)'
+      }]
     });
   }
   if (!errors.isEmpty()) {
     return res.status(422).json({
-      message: 'La validación de los campos fallo',
-      data: errors.array()
+      errors: [{
+        message: 'La validación de los campos fallo',
+        data: errors.array()
+      }]
     });
   }
   let ResetUrl = process.env.RESET_PASSWORD_URL;
@@ -622,14 +634,18 @@ exports.editUser = async (req, res, next) => {
   if (!req.file) {
     if (!Object.keys(req.body).length) {
       return res.status(422).json({
-        message: 'El cuerpo de la petición no debe estar vacío'
+        errors: [{
+          message: 'El cuerpo de la petición no debe estar vacío'
+        }]
       });
     }
   }
   if (!errors.isEmpty()) {
     return res.status(422).json({
-      message: 'La validación de los campos fallo',
-      data: errors.array()
+      errors: [{
+        message: 'La validación de los campos fallo',
+        data: errors.array()
+      }]
     });
   }
   try {

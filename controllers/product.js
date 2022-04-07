@@ -57,7 +57,9 @@ exports.getProduct = async (req, res, next) => {
     let lastPage;
     if (!productId && !productRef) {
         return res.status(422).json({
-            message: 'No se recibió ningún Product Id ni tampoco ningún Product Ref'
+            errors: [{
+                message: 'No se recibió ningún Product Id ni tampoco ningún Product Ref'
+            }]
         });
     }
     try {
@@ -130,7 +132,9 @@ exports.createProduct = async (req, res, next) => {
     const {nombre, descripcion, cantidad, marca, talla, categoria, sucursal, referencia, precioMinimo} = req.body;
     if (!Object.keys(req.body).length || Object.keys(req.body).length < 9) {
         return res.status(422).json({
-            message: 'El cuerpo de la petición no puede estar vacío'
+            errors: [{
+                message: 'El cuerpo de la petición no debe estar vacío'
+            }]
         });
     }
     try {
@@ -169,13 +173,17 @@ exports.editProduct = async (req, res, next) => {
     const errors = validationResult(req);
     if (!Object.keys(req.body).length) {
         return res.status(422).json({
-            message: 'El cuerpo de la petición no puede estar vacío'
+            errors: [{
+                message: 'El cuerpo de la petición no debe estar vacío'
+            }]
         });
     }
     if (!errors.isEmpty()) {
         return res.status(422).json({
-            message: 'La validación de los campos fallo',
-            data: errors.array()
+            errors: [{
+                message: 'La validación de los campos fallo',
+                data: errors.array()
+            }]
         });
     }
     try {

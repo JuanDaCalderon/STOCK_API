@@ -60,7 +60,9 @@ exports.getProductsSale = async (req, res, next) => {
     const { ref_key } = req.query;
     if (!Object.keys(req.query).length) {
         return res.status(422).json({
-            message: 'Los query params de la petición no deben estar vacíos'
+            errors: [{
+                message: 'Los query params de la petición no deben estar vacíos'
+            }]
         });
     }
     try {
@@ -97,7 +99,9 @@ exports.getSale = async (req, res, next) => {
     let saleProductosById = undefined || null;
     if (!saleId && !ref_key) {
         return res.status(422).json({
-            message: 'No se recibió ningún Sale Id ni tampoco ningún Sale Ref como query param'
+            errors: [{
+                message: 'No se recibió ningún Sale Id ni tampoco ningún Sale Ref como query param'
+            }]
         });
     }
     try {
@@ -195,19 +199,25 @@ exports.createSale = async (req, res, next) => {
     const errors = validationResult(req);
     if (!Object.keys(req.body).length || Object.keys(req.body).length < 6) {
         return res.status(422).json({
-            message: 'El cuerpo de la petición no puede estar vacío'
+            errors: [{
+                message: 'El cuerpo de la petición no puede estar vacío'
+            }]
         });
     }
     if (!Array.isArray(productos)) {
         return res.status(422).json({
-            message: 'el campo productos debe ser un Array con los productos comprados',
-            data: productos
+            errors: [{
+                message: 'el campo productos debe ser un Array con los productos comprados',
+                data: productos
+            }]
         });
     }
     if (!errors.isEmpty()) {
         return res.status(422).json({
-            message: 'La validación de los campos fallo',
-            data: errors.array()
+            errors: [{
+                message: 'La validación de los campos fallo',
+                data: errors.array()
+            }]
         });
     }
     try {

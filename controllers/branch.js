@@ -66,13 +66,17 @@ exports.createBranch = async (req, res, next) => {
     const errors = validationResult(req);
     if (!Object.keys(req.body).length || Object.keys(req.body).length < 3) {
         return res.status(422).json({
-            message: 'El cuerpo de la petición no debe estar vacío'
+            errors: [{
+                message: 'El cuerpo de la petición no debe estar vacío'
+            }]
         });
     }
     if (!errors.isEmpty()) {
         return res.status(422).json({
-            message: 'La validación de los campos fallo',
-            data: errors.array()
+            errors: [{
+                message: 'La validación de los campos fallo',
+                data: errors.array()
+            }]
         });
     }
     try {
@@ -107,14 +111,18 @@ exports.editBranch = async (req, res, next) => {
     if (!req.file) {
         if (!Object.keys(req.body).length) {
             return res.status(422).json({
-                message: 'El cuerpo de la petición no debe estar vacío'
+                errors: [{
+                    message: 'El cuerpo de la petición no debe estar vacío'
+                }]
             });
         }
     }
     if (!errors.isEmpty()) {
         return res.status(422).json({
-            message: 'La validación de los campos fallo',
-            data: errors.array()
+            errors: [{
+                message: 'La validación de los campos fallo',
+                data: errors.array()
+            }]
         });
     }
 
