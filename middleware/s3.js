@@ -11,18 +11,6 @@ const storage = new s3({
     secretAccessKey,
 })
 
-const getBuckets = () => {
-    /* return new Promise((resolve, reject) => {
-        storage.listBuckets()
-            .then(buckets => {
-                return resolve(buckets);
-            })
-            .catch(error => {
-                return reject(error);
-            })
-    }); */
-}
-
 const uploadToBucket = (bucketName, file) => {
     const fileStream = fs.createReadStream(file.path.replace("\\" ,"/"));
     const params = {
