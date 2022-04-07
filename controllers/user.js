@@ -500,7 +500,7 @@ exports.resetUser = (req, res, next) => {
                                               <span style="font-size: 18px; line-height: 32.4px; font-family: Montserrat, sans-serif;">
                                                 FECHA: ${hoy.getFullYear()}${" / "}${hoy.getMonth()+1}${" / "}${hoy.getDate()}
                                                 <br>
-                                                HORA ACTUAL: ${hoy.getHours()}${" : "}${hoy.getMinutes()}${" : "}${hoy.getSeconds()} ${(hoy.getHours()<=12)?': AM':': PM'}
+                                                EXPIRA A LAS: ${hoy.getHours()+1}${" : "}${hoy.getMinutes()}${" : "}${hoy.getSeconds()} ${(hoy.getHours()<=12)?': AM':': PM'}
                                               </span>
                                             </strong><br />
                                             <strong>
