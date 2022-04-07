@@ -6,25 +6,18 @@ module.exports = (req, res, next) => {
     if (authReq) {
         return next();
     }
-
     if (!token) {
-        return res.status(401).json({
-            errors:[{
-                msg: 'Se necesita un Authorization-Token para acceder a este recurso'
-                }]
-        });
+        const error = new Error('Se necesita un Authorization-Token para acceder a este recurso');
+        error.statusCode = 401;
+        throw error;
     }
     let decodedToken;
     try {
         decodedToken = jwt.verify(token, process.env.PRIVATE_KEY);
     }
     catch (error) {
-        return res.status(500).json({
-            errors:[{
-                value: error,
-                msg: 'El token suministrado no coincide con el de ningun usuario'
-                }]
-        });
+        error.message = 'El token suministrado no coincide con el de ningún usuario';
+        throw error;
     }
     if (decodedToken) {
         req.id = decodedToken.id;
