@@ -30,7 +30,7 @@ const fileStorage = multer.diskStorage({
 
 const fileFilter = (req, file, cb) => {
     const fileSize = parseInt(req.headers['content-length']);
-    if (fileSize > 2097152) {
+    if (fileSize > 2097152) { // 2 Mb
         cb(null, false);
     }
     if (

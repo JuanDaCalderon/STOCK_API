@@ -30,16 +30,14 @@ exports.getSales = async (req, res, next) => {
         });
         let totalVentas = ventas.count;
         const lastPage= Math.ceil(totalVentas/perPage);
-        if (ventas == null || ventas == undefined || ventas.length <= 0) {
-            return res.status(404).json({
-                errors: [{
-                    value: ventas,
-                    msg: 'No hay ventas en la base de datos'
-                }]
-            });
+        if (ventas == null || ventas == undefined || ventas.count <= 0) {
+            const error = new Error('No hay ventas en la base de datos');
+            error.statusCode = 404;
+            error.data = ventas;
+            throw error;
         } else {
             return res.status(200).json({
-                msg: 'ventas adquiridas correctamente',
+                message: 'ventas adquiridas correctamente',
                 total: totalVentas,
                 current_page: currentPage,
                 per_page: perPage,
@@ -50,29 +48,21 @@ exports.getSales = async (req, res, next) => {
                 previous_page: (currentPage <= 1) ? null : currentPage - 1,
                 from: (currentPage == 1) ? 1 : ((currentPage - 1) * perPage) + 1,
                 to: (currentPage == 1) ? perPage : (currentPage == lastPage) ? totalVentas : ((currentPage - 1) * perPage) + perPage,
-                value: ventas.rows
+                data: ventas.rows
             });
         }
     } catch (error) {
-        return res.status(500).json({
-            errors: [{
-                value: error,
-                msg: 'Error intentando traer las ventas'
-            }]
-        });
+        if (!error.statusCode) error.statusCode = 500;
+        next(error);
     }
 }
 
 exports.getProductsSale = async (req, res, next) => {
     const { ref_key } = req.query;
     if (!Object.keys(req.query).length) {
-        return res.status(422).json({
-            errors:[{
-            value: Object.keys(req.query).length,
-            msg: 'Los query params de la petición no debe estar vacío',
-            location: "query"
-            }]
-        });
+        const error = new Error('Los query params de la petición no deben estar vacíos');
+        error.statusCode = 422;
+        throw error;
     }
     try {
         const productSales = await ventaProducto.findAll({
@@ -86,25 +76,19 @@ exports.getProductsSale = async (req, res, next) => {
         });
         if (productSales && productSales.length > 0) {
             return res.status(200).json({
-                msg: `Productos vendidos correspondientes a la venta: ${ref_key}`,
-                value: productSales
+                message: `Productos vendidos correspondientes a la venta: ${ref_key}`,
+                data: productSales
             });
         }
         else {
-            return res.status(404).json({
-                errors: [{
-                    value: productSales,
-                    msg: 'No coincide ningún producto con esta ref_key'
-                }]
-            });
+            const error = new Error('No coincide ningún producto con esta ref_key');
+            error.statusCode = 402;
+            error.data = productSales;
+            throw error;
         }
     } catch (error) {
-        return res.status(500).json({
-            errors: [{
-                value: error,
-                msg: 'Error intentando traer la venta'
-            }]
-        });
+        if (!error.statusCode) error.statusCode = 500;
+        next(error);
     }
 }
 
@@ -113,15 +97,9 @@ exports.getSale = async (req, res, next) => {
     let saleProductosByRef = undefined || null;
     let saleProductosById = undefined || null;
     if (!saleId && !ref_key) {
-        return res.status(422).json({
-            errors: [{
-                value: {
-                    saleId,
-                    ref_key
-                },
-                msg: 'No se recibió ningún Sale Id ni tampoco ningún Sale Ref como query param'
-            }]
-        })
+        const error = new Error('No se recibió ningún Sale Id ni tampoco ningún Sale Ref como query param');
+        error.statusCode = 422;
+        throw error;
     }
     try {
         if (ref_key && ref_key.length > 0) {
@@ -144,32 +122,25 @@ exports.getSale = async (req, res, next) => {
         if (saleProductosByRef || saleProductosById) {
             if (saleProductosByRef && !saleProductosById) {
                 return res.status(200).json({
-                    msg: 'Venta adquirida correctamente por ref_key',
-                    value: saleProductosByRef
+                    message: 'Venta adquirida correctamente por ref_key',
+                    data: saleProductosByRef
                 });
             }
-            else /* if (!saleProductosByRef && saleProductosById) */ {
+            else {
                 return res.status(200).json({
-                    msg: 'Venta adquirida correctamente por id',
-                    value: saleProductosById
+                    message: 'Venta adquirida correctamente por id',
+                    data: saleProductosById
                 });
             }
         }
         else {
-            return res.status(404).json({
-                errors: [{
-                value: null,
-                msg: 'No coincide ninguna venta con la Referencia o con el Id'
-                }]
-            })
+            const error = new Error('No coincide ninguna venta con la Referencia o con el Id');
+            error.statusCode = 404;
+            throw error;
         }
     } catch (error) {
-        return res.status(500).json({
-            errors: [{
-                value: error,
-                msg: 'Error intentando traer la venta'
-            }]
-        });
+        if (!error.statusCode) error.statusCode = 500;
+        next(error);
     }
 }
 
@@ -224,30 +195,24 @@ exports.createSale = async (req, res, next) => {
     const {nombreCliente, correoCliente, formaPago, sucursal, vendedor, productos} = req.body;
     const errors = validationResult(req);
     if (!Object.keys(req.body).length || Object.keys(req.body).length < 6) {
-        return res.status(422).json({
-            errors:[{
-            value: Object.keys(req.body).length,
-            msg: 'El cuerpo de la petición no debe estar vacío y debe ser enviados todos los campos',
-            location: "body"
-            }]
-        });
+        const error = new Error('El cuerpo de la petición no debe estar vacío y debe ser enviados todos los campos');
+        error.statusCode = 422;
+        throw error;
     }
     if (!Array.isArray(productos)) {
-        return res.status(422).json({
-            errors:[{
-                value: productos,
-                msg: 'el campo productos debe ser un Array con los productos comprados',
-                location: "body"
-            }]
-        });
+        const error = new Error('el campo productos debe ser un Array con los productos comprados');
+        error.statusCode = 422;
+        error.data = productos;
+        throw error;
     }
     if (!errors.isEmpty()) {
-        return res.status(422).json({
-            errors: errors.array()
-        });
+        const error = new Error('La validación de los campos fallo');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
     }
     try {
-        let ref_key = await crypto.randomBytes(6).toString('hex');
+        let ref_key = crypto.randomBytes(6).toString('hex');
         let total = 0;
         let nowDate = Date.now() - desface;
         const productObj = await promeseGetProducts(productos, ref_key);
@@ -275,8 +240,8 @@ exports.createSale = async (req, res, next) => {
             });
             if (venta) {
                 return res.status(200).json({
-                    msg: 'Venta creada correctamente',
-                    value: {
+                    message: 'Venta creada correctamente',
+                    data: {
                         nombreCliente: nombreCliente.toLowerCase(),
                         correoCliente: correoCliente.toLowerCase(),
                         formaPago: formaPago.toLowerCase(),
@@ -290,12 +255,8 @@ exports.createSale = async (req, res, next) => {
         }
     }
     catch (error) {
-        return res.status(500).json({
-            errors: [{
-                value: error,
-                msg: 'Error creando la venta, intente más tarde'
-            }]
-        });
+        if (!error.statusCode) error.statusCode = 500;
+        next(error);
     }
 }
 
@@ -313,38 +274,26 @@ exports.deleteSale = async (req, res, next) => {
                 });
                 if (productSales) {
                     return res.status(200).json({
-                        msg: 'venta eliminada correctamente',
-                        value: response
+                        message: 'venta eliminada correctamente',
+                        data: response
                     });
                 }
-                return res.status(500).json({
-                    msg: 'Error intentando eliminar la venta',
-                    value: {
-                        products_sale: productSales
-                    }
-                });
+                const error = new Error();
+                error.data = productSales;
+                throw error;
             }
-            return res.status(500).json({
-                msg: 'Error intentando eliminar la venta',
-                value: {
-                    sale: response
-                }
-            });
+            const error = new Error();
+            error.data = response;
+            throw error;
         }
         else {
-            return res.status(404).json({
-                errors: [{
-                value: sale,
-                msg: 'No coincide ninguna venta con este id'
-                }]
-            });
+            const error = new Error('No coincide ninguna venta con este id');
+            error.statusCode = 404;
+            error.data = sale;
+            throw error;
         }
     } catch (error) {
-        return res.status(500).json({
-            errors: [{
-                value: error,
-                msg: 'Error eliminando la venta, intente más tarde'
-            }]
-        });
+        if (!error.statusCode) error.statusCode = 500;
+        next(error);
     }
 }
