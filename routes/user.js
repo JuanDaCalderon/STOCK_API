@@ -15,8 +15,8 @@ const userController = require('../controllers/user');
 // 1. READ ALL USERS: GET - http://localhost:9000/usuarios
 router.get('/usuarios', isAuth, userController.getUsers);
 
-// 2. READ A USER: GET - http://localhost:9000/usuario/:userId
-router.get('/usuario/:userId', isAuth, userController.getUser);
+// 2. READ A USER: GET - http://localhost:9000/usuario
+router.get('/usuario', isAuth, userController.getUser);
 
 // 3. CREATE A USER: POST - http://localhost:9000/usuario
 router.post('/usuario',isAuthCreate, isAuth,
@@ -32,7 +32,6 @@ router.post('/usuario',isAuthCreate, isAuth,
     body('nombre').isLength({ min: 12 }).withMessage('El nombre debe tener mínimo 12 caracteres'),
     body('admin').isBoolean().withMessage('El campo "admin" debe ser un boolean'),
     body('genero').custom(value => {
-        console.log(value);
         if (value == 'm' || value == 'M') { return true; }
         else if(value == 'f' || value == 'F') { return true; }
         else { throw new Error('El género debe ser "f" ó "m"'); }
@@ -56,8 +55,8 @@ router.put('/usuario', isAuth,
     }),
     userController.resetUser);
 
-// 6. EDIT A USER: PUT - http://localhost:9000/usuario/:userId
-router.put('/usuario/:userId', isAuth,
+// 6. EDIT A USER: PUT - http://localhost:9000/usuario
+router.put('/usuario/edit', isAuth,
     query('recovery').custom(value => {
         if(value === undefined || value.length <= 0){
             throw new Error('El query param "Recovery" debe estar definido');
@@ -77,8 +76,8 @@ router.put('/usuario/:userId', isAuth,
     }),
     userController.editUser);
 
-// 7. DELEATE A USER: DELETE - http://localhost:9000/usuario/:userId
-router.delete('/usuario/:userId', isAuth, userController.deleteUser);
+// 7. DELEATE A USER: DELETE - http://localhost:9000/usuario
+router.delete('/usuario', isAuth, userController.deleteUser);
 
 module.exports = router;
 

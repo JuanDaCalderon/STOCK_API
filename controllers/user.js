@@ -53,7 +53,7 @@ exports.getUsers = async (req, res, next) => {
 }
 
 exports.getUser = async (req, res, next) => {
-  const userId = req.params.userId;
+  const userId =  req.query.userId || req.id;
   try {
     const user = await User.findByPk(userId, {
       attributes: {
@@ -636,7 +636,7 @@ exports.editUser = async (req, res, next) => {
     const hoy = new Date();
     const desface = Math.abs((hoy.getTimezoneOffset())/-60) * 3600000;
     const hora_actual = (Date.now() - desface);
-    const userId = req.params.userId;
+    const userId = req.query.userId || req.id;
     const {nombre, cedula, telefono, email, genero, cargo, sucursal, fechaNacimiento, fechaSalida, admin, activo } = req.body;
     let UPDhashPassword = null;
     if (recovery == true || recovery.toLowerCase() == "true") {
@@ -827,7 +827,7 @@ exports.editUser = async (req, res, next) => {
 }
 
 exports.deleteUser = async (req, res, next) => {
-    const userId = req.params.userId;
+    const userId = req.query.userId || req.id;
     try {
       const user = await User.findByPk(userId, {
           attributes: {

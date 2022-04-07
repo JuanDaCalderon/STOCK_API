@@ -14,7 +14,6 @@ describe('Auth middleware', () => {
         }
         expect(authMiddleware.bind(this, req, {}, () => {})).to.not.throw();
     });
-
     it('should throw an error if no authorization header is present', () => {
         const req = {
             get: function () {
@@ -23,7 +22,6 @@ describe('Auth middleware', () => {
         }
         expect(authMiddleware.bind(this, req, {}, () => {})).to.throw('Se necesita un Authorization-Token para acceder a este recurso');
     });
-
     it('should throw an error if the token cannot be verified', () => {
         const req = {
             get: function() {
@@ -32,7 +30,6 @@ describe('Auth middleware', () => {
           };
         expect(authMiddleware.bind(this, req, {}, () => {})).to.throw('El token suministrado no coincide con el de ningún usuario');
     });
-
     it('should yield a userId after decoding the token', () => {
         const req = {
             get: function () {
@@ -47,5 +44,4 @@ describe('Auth middleware', () => {
         expect(jwt.verify.called).to.be.true;
         jwt.verify.restore();
     });
-
 })
