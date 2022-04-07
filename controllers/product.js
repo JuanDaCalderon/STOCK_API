@@ -56,9 +56,9 @@ exports.getProduct = async (req, res, next) => {
     let totalProductos;
     let lastPage;
     if (!productId && !productRef) {
-        const error = new Error('No se recibió ningún Product Id ni tampoco ningún Product Ref');
-        error.statusCode = 422;
-        throw error;
+        return res.status(422).json({
+            message: 'No se recibió ningún Product Id ni tampoco ningún Product Ref'
+        });
     }
     try {
         if (productRef && productRef.length > 0) {
@@ -129,9 +129,9 @@ exports.getProduct = async (req, res, next) => {
 exports.createProduct = async (req, res, next) => {
     const {nombre, descripcion, cantidad, marca, talla, categoria, sucursal, referencia, precioMinimo} = req.body;
     if (!Object.keys(req.body).length || Object.keys(req.body).length < 9) {
-        const error = new Error('El cuerpo de la petición no puede estar vacío y deben ser enviados todos los campos');
-        error.statusCode = 422;
-        throw error;
+        return res.status(422).json({
+            message: 'El cuerpo de la petición no puede estar vacío'
+        });
     }
     try {
         const productData = {
@@ -168,9 +168,9 @@ exports.editProduct = async (req, res, next) => {
     const {nombre, descripcion, cantidad, marca, talla, categoria, sucursal, referencia, precioMinimo, disponible} = req.body;
     const errors = validationResult(req);
     if (!Object.keys(req.body).length) {
-        const error = new Error('El cuerpo de la petición no debe estar vacio');
-        error.statusCode = 422;
-        throw error;
+        return res.status(422).json({
+            message: 'El cuerpo de la petición no puede estar vacío'
+        });
     }
     if (!errors.isEmpty()) {
         return res.status(422).json({

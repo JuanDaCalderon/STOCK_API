@@ -20,9 +20,8 @@ exports.getSales = async (req, res, next) => {
                 {
                     model: User,
                     attributes: {
-                        exclude: ['sucursal_id', 'contraseña', 'reset_token', 'reset_token_expiration']
-                    },
-                    include: Branch
+                        exclude: ['contraseña', 'reset_token', 'reset_token_expiration']
+                    }
                 }
             ],
             offset: (currentPage - 1) * perPage,
@@ -60,9 +59,9 @@ exports.getSales = async (req, res, next) => {
 exports.getProductsSale = async (req, res, next) => {
     const { ref_key } = req.query;
     if (!Object.keys(req.query).length) {
-        const error = new Error('Los query params de la petición no deben estar vacíos');
-        error.statusCode = 422;
-        throw error;
+        return res.status(422).json({
+            message: 'Los query params de la petición no deben estar vacíos'
+        });
     }
     try {
         const productSales = await ventaProducto.findAll({
@@ -97,9 +96,9 @@ exports.getSale = async (req, res, next) => {
     let saleProductosByRef = undefined || null;
     let saleProductosById = undefined || null;
     if (!saleId && !ref_key) {
-        const error = new Error('No se recibió ningún Sale Id ni tampoco ningún Sale Ref como query param');
-        error.statusCode = 422;
-        throw error;
+        return res.status(422).json({
+            message: 'No se recibió ningún Sale Id ni tampoco ningún Sale Ref como query param'
+        });
     }
     try {
         if (ref_key && ref_key.length > 0) {
@@ -195,15 +194,15 @@ exports.createSale = async (req, res, next) => {
     const {nombreCliente, correoCliente, formaPago, sucursal, vendedor, productos} = req.body;
     const errors = validationResult(req);
     if (!Object.keys(req.body).length || Object.keys(req.body).length < 6) {
-        const error = new Error('El cuerpo de la petición no debe estar vacío y debe ser enviados todos los campos');
-        error.statusCode = 422;
-        throw error;
+        return res.status(422).json({
+            message: 'El cuerpo de la petición no puede estar vacío'
+        });
     }
     if (!Array.isArray(productos)) {
-        const error = new Error('el campo productos debe ser un Array con los productos comprados');
-        error.statusCode = 422;
-        error.data = productos;
-        throw error;
+        return res.status(422).json({
+            message: 'el campo productos debe ser un Array con los productos comprados',
+            data: productos
+        });
     }
     if (!errors.isEmpty()) {
         return res.status(422).json({

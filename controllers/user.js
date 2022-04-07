@@ -85,9 +85,9 @@ exports.createUser = async (req, res, next) => {
   /* If validators */
   if (!req.file){
     if (!Object.keys(req.body).length || Object.keys(req.body).length < 9) {
-      const error = new Error('El cuerpo de la petición no debe estar vacío y debe ser enviados todos los campos');
-      error.statusCode = 422;
-      throw error;
+      return res.status(422).json({
+        message: 'El cuerpo de la petición no debe estar vacío'
+      });
     }
   }
   if (!errors.isEmpty()) {
@@ -161,9 +161,9 @@ exports.authUser = async (req, res, next) => {
   const {email, password} = req.body;
   const errors = validationResult(req);
   if (!Object.keys(req.body).length || Object.keys(req.body).length < 2) {
-    const error = new Error('El cuerpo de la petición no debe estar vacío y debe ser enviados todos los campos (Email y Contraseña)');
-    error.statusCode = 422;
-    throw error;
+    return res.status(422).json({
+      message: 'El cuerpo de la petición no debe estar vacío'
+    });
   }
   if (!errors.isEmpty()) {
     return res.status(422).json({
@@ -231,9 +231,9 @@ exports.resetUser = (req, res, next) => {
   const { email } = req.query;
   const errors = validationResult(req);
   if (!email) {
-    const error = new Error('El email del usuario no ha sido adquirido como query param (Probablemente este vacío)');
-    error.statusCode = 422;
-    throw error;
+    return res.status(422).json({
+      message: 'El email del usuario no ha sido adquirido como query param (Probablemente este vacío)'
+    });
   }
   if (!errors.isEmpty()) {
     return res.status(422).json({
@@ -621,9 +621,9 @@ exports.editUser = async (req, res, next) => {
   const errors = validationResult(req);
   if (!req.file) {
     if (!Object.keys(req.body).length) {
-      const error = new Error('El cuerpo de la petición no debe estar vacío');
-      error.statusCode = 422;
-      throw error;
+      return res.status(422).json({
+        message: 'El cuerpo de la petición no debe estar vacío'
+      });
     }
   }
   if (!errors.isEmpty()) {

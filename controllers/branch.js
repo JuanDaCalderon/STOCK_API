@@ -65,9 +65,9 @@ exports.createBranch = async (req, res, next) => {
     const {nombre, direccion, telefono} = req.body;
     const errors = validationResult(req);
     if (!Object.keys(req.body).length || Object.keys(req.body).length < 3) {
-        const error = new Error('El cuerpo de la petición no debe estar vacío y debe ser enviados todos los campos');
-        error.statusCode = 422;
-        throw error;
+        return res.status(422).json({
+            message: 'El cuerpo de la petición no debe estar vacío'
+        });
     }
     if (!errors.isEmpty()) {
         return res.status(422).json({
@@ -106,9 +106,9 @@ exports.editBranch = async (req, res, next) => {
     const errors = validationResult(req);
     if (!req.file) {
         if (!Object.keys(req.body).length) {
-            const error = new Error('El cuerpo de la petición no debe estar vacío');
-            error.statusCode = 422;
-            throw error;
+            return res.status(422).json({
+                message: 'El cuerpo de la petición no debe estar vacío'
+            });
         }
     }
     if (!errors.isEmpty()) {
