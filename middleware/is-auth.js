@@ -19,8 +19,6 @@ module.exports = (req, res, next) => {
         error.message = 'El token suministrado no coincide con el de ningún usuario';
         throw error;
     }
-    if (decodedToken) {
-        req.id = decodedToken.id;
-    }
+    req.id = decodedToken.id || null;
     return next();
 }
