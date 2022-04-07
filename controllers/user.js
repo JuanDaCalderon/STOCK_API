@@ -604,10 +604,9 @@ exports.resetUser = (req, res, next) => {
               email: mail
             });
         } catch (error) {
-          if (!error.statusCode) error.statusCode = 500;
           error.message = 'Hubo un error intentando enviar el correo de recuperación, por favor intenta de nuevo en unos minutos';
           error.data = error.response;
-          next(error);
+          throw error;
         }
       }
     } catch (error) {
