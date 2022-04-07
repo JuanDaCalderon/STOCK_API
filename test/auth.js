@@ -3,8 +3,18 @@ const jwt = require('jsonwebtoken');
 const sinon = require('sinon');
 
 const authMiddleware = require('../middleware/is-auth');
+const createAuthMiddleware = require('../middleware/create-auth');
 
 describe('Auth middleware', () => {
+    it('should auth_create be false if needAuth query param is not defined', () => {
+        const req = {
+            query: {
+                needAuth: undefined
+            }
+        }
+        createAuthMiddleware(req, {}, () => {});
+        expect(req).to.have.property('auth_create', false);
+    });
     it('should continue if the auth_create property is true', () => {
         const req = {
             auth_create: true,
