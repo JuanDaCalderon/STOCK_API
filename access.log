@@ -98,3 +98,6 @@
 ::1 - - [07/Apr/2022:21:04:39 +0000] "GET /api/venta/productos?ref_key=6d45e8e66993 HTTP/1.1" 402 82 "-" "PostmanRuntime/7.29.0"
 ::1 - - [07/Apr/2022:21:04:41 +0000] "GET /api/venta/productos?ref_key=8c1aad0b6485 HTTP/1.1" 200 678 "-" "PostmanRuntime/7.29.0"
 ::1 - - [07/Apr/2022:21:04:55 +0000] "GET /api/venta?ref_key=8c1aad0b6485 HTTP/1.1" 200 1023 "-" "PostmanRuntime/7.29.0"
+::1 - - [08/Apr/2022:02:12:31 +0000] "PUT /api/usuario HTTP/1.1" 422 125 "-" "PostmanRuntime/7.29.0"
+::1 - - [08/Apr/2022:02:13:24 +0000] "PUT /api/usuario HTTP/1.1" 422 125 "-" "PostmanRuntime/7.29.0"
+::1 - - [08/Apr/2022:02:13:38 +0000] "PUT /api/usuario?email=65465 HTTP/1.1" 422 291 "-" "PostmanRuntime/7.29.0"
