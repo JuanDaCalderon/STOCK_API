@@ -1,59 +1,84 @@
 # STOCK APP
 
-## Install
+## Descripción 🚀
 
-Clone this repository on your local machine
-```
+_Sistema de inventarios para comerciantes_
+
+Mira **Despliegue** para conocer como desplegar el proyecto.
+
+## Instalación 🔑
+
+* Clona este repositorio en tú máquina local
+
 git clone https://github.com/JuanDaCalderon/STOCK_API.git
-```
 
-### Requirements
+_Para instalar las dependencias con node_
+
+* **npm install** - nos genera la carpeta node-modules con las dependencias descritas en el *package.json* instaladas
+
+## Requirements 🚀
 
 - node.js v16.14.0
 - npm 8.3.1
 - mysql (Server, Workbench)
 
-### Db
+### Base de datos 🔠
 
-Create a new data base
-```
-CREATE DATABASE IF NOT EXISTS stock DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+* Crear una nueva base de datos
 
-You also can Execute "MAINdataBaseCreation.sql" in mysql workbench to create the data base
-```
+**CREATE DATABASE IF NOT EXISTS stock DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;** ⬅️
 
-### Node.js
 
-From the root folder, install node packages
-```
-npm install
-```
+## Despliegue 📦
+
+- Desde la carpeta raíz
 
 Create the .env file and add configs
 
-```
+**Cambia las variables de entorno si es necesario** ⤵️
 
-Change this if needed
 ```
 NODE_ENV=development
 
-PORT=3000
+PORT=9000
 
-SENDGRID_API_KEY=*****************
+SENDGRID_API_KEY=********************
 
 DB_HOST=localhost
 DB_USERNAME=root
 DB_PASSWORD="000000"
 DB_NAME=stock
 
-RESET_PASSWORD_URL= "********************"
+RESET_PASSWORD_URL= ********************
 RESET_DB = false
-PRIVATE_KEY = "*****************"
+PRIVATE_KEY = ********************
+
+AWS_REGION = ********************
+AWS_ACCESS_KEY = ********************
+AWS_SECRET_KEY = ********************
+AWS_BUCKET = ********************
 ```
 
-# Run the app
-```
-npm start
-```
+# Correr la aplicación 🏃
 
-It will run on http://localhost:9000/
+**npm start**
+*It will run on http://localhost:9000/*
+
+## Construido con 🛠️
+
+* [Javascript](https://developer.mozilla.org/es/docs/Web/JavaScript) - Lenguaje de programación
+* [Node](https://nodejs.org/es/) - Manejador de dependencias y motor del servidor
+* [Mysql](https://www.mysql.com/) - Base de datos
+* [Mocha, Chai, Sinon](https://mochajs.org/)(https://www.chaijs.com/)(https://sinonjs.org/) - Testing (Unitarios y de integración)
+
+## Versionado 📌
+
+V1.0.0
+
+## Autores ✒️
+
+* **Juan David Calderón Jiménez** - - (https://github.com/JuanDaCalderon)
+
+## Gratitud 🎁
+---
+⌨️ con ❤️ por [JuanDaCalderon](https://github.com/JuanDaCalderon) 😊
