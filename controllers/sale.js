@@ -58,14 +58,12 @@ exports.getSales = async (req, res, next) => {
 
 exports.getProductsSale = async (req, res, next) => {
     const { ref_key } = req.query;
-    if (!Object.keys(req.query).length) {
-        return res.status(422).json({
-            errors: [{
-                message: 'Los query params de la petición no deben estar vacíos'
-            }]
-        });
-    }
     try {
+        if (!Object.keys(req.query).length) {
+            const error = new Error('Los query params de la petición no deben estar vacíos');
+            error.statusCode = 422;
+            throw error;
+        }
         const productSales = await ventaProducto.findAll({
             attributes: {
                 exclude: ['producto_id']
@@ -97,14 +95,12 @@ exports.getSale = async (req, res, next) => {
     const { saleId, ref_key } = req.query;
     let saleProductosByRef = undefined || null;
     let saleProductosById = undefined || null;
-    if (!saleId && !ref_key) {
-        return res.status(422).json({
-            errors: [{
-                message: 'No se recibió ningún Sale Id ni tampoco ningún Sale Ref como query param'
-            }]
-        });
-    }
     try {
+        if (!saleId && !ref_key) {
+            const error = new Error('No se recibió ningún Sale Id ni tampoco ningún Sale Ref como query param');
+            error.statusCode = 422;
+            throw error;
+        }
         if (ref_key && ref_key.length > 0) {
             saleProductosByRef = await ventasTotal.findOne({
                 where: { venta_producto_ref: ref_key },
@@ -147,7 +143,7 @@ exports.getSale = async (req, res, next) => {
     }
 }
 
-function promeseGetProducts(productos, ref_key) {
+function promiseGetProducts(productos, ref_key) {
     return new Promise((resolve, reject) => {
         const productosToUpdate = [];
         const productSaleObjs = [];
@@ -181,12 +177,15 @@ function promeseGetProducts(productos, ref_key) {
                 return reject(error);
             });
         });
-        setTimeout(functioncheckProductArray = () => {
+        setTimeout(functioncheckProductArray = (llamados = 0) => {
             if (productosToUpdate.length > 0 && productSaleObjs.length > 0) {
                 return resolve({productosToUpdate:productosToUpdate, productSaleObjs: productSaleObjs});
             }
+            else if (llamados > 10) {
+                return reject('No existe en el inventario estos productos');
+            }
             else {
-                functioncheckProductArray();
+                setTimeout(functioncheckProductArray, 200, llamados + 1);
             }
         }, 200)
     });
@@ -197,34 +196,28 @@ exports.createSale = async (req, res, next) => {
     let desface = Math.abs((hoy.getTimezoneOffset())/-60) * 3600000;
     const {nombreCliente, correoCliente, formaPago, sucursal, vendedor, productos} = req.body;
     const errors = validationResult(req);
-    if (!Object.keys(req.body).length || Object.keys(req.body).length < 6) {
-        return res.status(422).json({
-            errors: [{
-                message: 'El cuerpo de la petición no puede estar vacío'
-            }]
-        });
-    }
-    if (!Array.isArray(productos)) {
-        return res.status(422).json({
-            errors: [{
-                message: 'el campo productos debe ser un Array con los productos comprados',
-                data: productos
-            }]
-        });
-    }
-    if (!errors.isEmpty()) {
-        return res.status(422).json({
-            errors: [{
-                message: 'La validación de los campos fallo',
-                data: errors.array()
-            }]
-        });
-    }
     try {
+        if (!Object.keys(req.body).length || Object.keys(req.body).length < 6) {
+            const error = new Error('El cuerpo de la petición no puede estar vacío');
+            error.statusCode = 422;
+            throw error;
+        }
+        if (!Array.isArray(productos)) {
+            const error = new Error('el campo productos debe ser un Array con los productos comprados');
+            error.statusCode = 422;
+            error.data = productos;
+            throw error;
+        }
+        if (!errors.isEmpty()) {
+            const error = new Error('La validación de los campos fallo');
+            error.statusCode = 422;
+            error.data = errors.array();
+            throw error;
+        }
         let ref_key = crypto.randomBytes(6).toString('hex');
         let total = 0;
         let nowDate = Date.now() - desface;
-        const productObj = await promeseGetProducts(productos, ref_key);
+        const productObj = await promiseGetProducts(productos, ref_key);
         for (let index = 0; index < productObj.productosToUpdate.length; index++) {
             await productObj.productosToUpdate[index].update({ cantidad: parseInt(productObj.productosToUpdate[index].cantidad) - parseInt(productObj.productSaleObjs[index].cantidad) });
             if (productObj.productosToUpdate[index].cantidad <= 0) {
