@@ -64,22 +64,18 @@ exports.getBranch =  async (req, res, next) => {
 exports.createBranch = async (req, res, next) => {
     const {nombre, direccion, telefono} = req.body;
     const errors = validationResult(req);
-    if (!Object.keys(req.body).length || Object.keys(req.body).length < 3) {
-        return res.status(422).json({
-            errors: [{
-                message: 'El cuerpo de la petición no debe estar vacío'
-            }]
-        });
-    }
-    if (!errors.isEmpty()) {
-        return res.status(422).json({
-            errors: [{
-                message: 'La validación de los campos fallo',
-                data: errors.array()
-            }]
-        });
-    }
     try {
+        if (!Object.keys(req.body).length || Object.keys(req.body).length < 3) {
+            const error = new Error('El cuerpo de la petición no debe estar vacío');
+            error.statusCode = 422;
+            throw error;
+        }
+        if (!errors.isEmpty()) {
+            const error = new Error('La validación de los campos fallo');
+            error.statusCode = 422;
+            error.data = errors.array();
+            throw error;
+        }
         let s3Response = null;
         (req.file) ? s3Response = await uploadToBucket(process.env.AWS_BUCKET, req.file): null
         const response = await Branch.create({
@@ -108,28 +104,22 @@ exports.createBranch = async (req, res, next) => {
 exports.editBranch = async (req, res, next) => {
     const {nombre, direccion, telefono, activa} = req.body;
     const errors = validationResult(req);
-    if (!req.file) {
-        if (!Object.keys(req.body).length) {
-            return res.status(422).json({
-                errors: [{
-                    message: 'El cuerpo de la petición no debe estar vacío'
-                }]
-            });
-        }
-    }
-    if (!errors.isEmpty()) {
-        return res.status(422).json({
-            errors: [{
-                message: 'La validación de los campos fallo',
-                data: errors.array()
-            }]
-        });
-    }
-
     try {
+        if (!req.file) {
+            if (!Object.keys(req.body).length) {
+                const error = new Error('El cuerpo de la petición no debe estar vacío');
+                error.statusCode = 422;
+                throw error;
+            }
+        }
+        if (!errors.isEmpty()) {
+            const error = new Error('La validación de los campos fallo');
+            error.statusCode = 422;
+            error.data = errors.array();
+            throw error;
+        }
         const branch = req.branchDoc;
         const errorsVal = [];
-
         if (nombre !== null && nombre !== undefined && nombre.length > 0) {
             if (validator.isLength(nombre, {
                     min: 7
