@@ -55,14 +55,12 @@ exports.getProduct = async (req, res, next) => {
     const perPage = parseInt(req.query.perPage) || 1;
     let totalProductos;
     let lastPage;
-    if (!productId && !productRef) {
-        return res.status(422).json({
-            errors: [{
-                message: 'No se recibió ningún Product Id ni tampoco ningún Product Ref'
-            }]
-        });
-    }
     try {
+        if (!productId && !productRef) {
+            const error = new Error('No se recibió ningún Product Id ni tampoco ningún Product Ref');
+            error.statusCode = 422;
+            throw error;
+        }
         if (productRef && productRef.length > 0) {
             productoByRef = await Product.findAndCountAll({
                 where: { referencia: productRef },
@@ -130,14 +128,12 @@ exports.getProduct = async (req, res, next) => {
 
 exports.createProduct = async (req, res, next) => {
     const {nombre, descripcion, cantidad, marca, talla, categoria, sucursal, referencia, precioMinimo} = req.body;
-    if (!Object.keys(req.body).length || Object.keys(req.body).length < 9) {
-        return res.status(422).json({
-            errors: [{
-                message: 'El cuerpo de la petición no debe estar vacío'
-            }]
-        });
-    }
     try {
+        if (!Object.keys(req.body).length || Object.keys(req.body).length < 9) {
+            const error = new Error('El cuerpo de la petición no debe estar vacío');
+            error.statusCode = 422;
+            throw error;
+        }
         const productData = {
             nombre: nombre.toLowerCase(),
             descripcion: descripcion.toLowerCase(),
@@ -171,22 +167,18 @@ exports.createProduct = async (req, res, next) => {
 exports.editProduct = async (req, res, next) => {
     const {nombre, descripcion, cantidad, marca, talla, categoria, sucursal, referencia, precioMinimo, disponible} = req.body;
     const errors = validationResult(req);
-    if (!Object.keys(req.body).length) {
-        return res.status(422).json({
-            errors: [{
-                message: 'El cuerpo de la petición no debe estar vacío'
-            }]
-        });
-    }
-    if (!errors.isEmpty()) {
-        return res.status(422).json({
-            errors: [{
-                message: 'La validación de los campos fallo',
-                data: errors.array()
-            }]
-        });
-    }
     try {
+        if (!Object.keys(req.body).length) {
+            const error = new Error('El cuerpo de la petición no debe estar vacío');
+            error.statusCode = 422;
+            throw error;
+        }
+        if (!errors.isEmpty()) {
+            const error = new Error('La validación de los campos fallo');
+            error.statusCode = 422;
+            error.data = errors.array();
+            throw error;
+        }
         const product = req.productDoc;
         const errorsVal = [];
         if (nombre !== null && nombre !== undefined && nombre.length > 0) {
@@ -219,13 +211,13 @@ exports.editProduct = async (req, res, next) => {
         if (disponible !== null && disponible !== undefined) {
             if (validator.isBoolean(disponible.toString())) { product.disponible = disponible; }
             else {
-            let error = {
-                data: disponible,
-                message: 'El campo "disponible" debe ser un boolean',
-                param: "disponible",
-                location: "body"
-            }
-            errorsVal.push(error);
+                let error = {
+                    data: disponible,
+                    message: 'El campo "disponible" debe ser un boolean',
+                    param: "disponible",
+                    location: "body"
+                }
+                errorsVal.push(error);
             }
         }
         if (errorsVal.length > 0) {
@@ -259,8 +251,8 @@ exports.editProduct = async (req, res, next) => {
 
 exports.deleteProduct = async(req, res, next) => {
     const productId = req.params.productId;
-    const producto = await Product.findByPk(productId);
     try {
+        const producto = await Product.findByPk(productId);
         if (producto) {
             const response = await producto.destroy();
             if (response) {
