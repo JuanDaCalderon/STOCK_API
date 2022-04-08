@@ -16,7 +16,7 @@ _Para instalar las dependencias con node_
 
 * **npm install** - nos genera la carpeta node-modules con las dependencias descritas en el *package.json* instaladas
 
-## Requirements 🚀
+## Requerimientos 🚀
 
 - node.js v16.14.0
 - npm 8.3.1
