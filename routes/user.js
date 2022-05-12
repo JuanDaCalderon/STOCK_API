@@ -19,7 +19,7 @@ router.get('/usuarios', isAuth, userController.getUsers);
 router.get('/usuario', isAuth, userController.getUser);
 
 // 3. CREATE A USER: POST - http://localhost:9000/usuario
-router.post('/usuario',isAuthCreate, isAuth,
+router.post('/usuario', isAuthCreate, isAuth,
     body('email').isEmail().withMessage('Formato de Email Invalido').custom(value => {
         return User.findOne({ where: { correo: value }})
         .then(userDoc=>{
@@ -44,7 +44,7 @@ router.post('/auth',
     userController.authUser);
 
 // 5. PASSWORD RECOVERY: PUT - http://localhost:9000/usuario?reset=password
-router.put('/usuario', isAuth,
+router.put('/usuario', isAuthCreate, isAuth,
     query('email').isEmail().withMessage('Formato de Email Invalido').custom(value => {
         return User.findOne({ where: { correo: value }})
         .then(userDoc=>{
@@ -56,7 +56,7 @@ router.put('/usuario', isAuth,
     userController.resetUser);
 
 // 6. EDIT A USER: PUT - http://localhost:9000/usuario
-router.put('/usuario/edit', isAuth,
+router.put('/usuario/edit', isAuthCreate, isAuth,
     query('recovery').custom(value => {
         if(value === undefined || value.length <= 0){
             throw new Error('El query param "Recovery" debe estar definido');

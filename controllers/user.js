@@ -185,7 +185,8 @@ exports.authUser = async (req, res, next) => {
               email: user.email,
               id: user.id
             },
-            process.env.PRIVATE_KEY, {
+            process.env.PRIVATE_KEY,
+            {
               expiresIn: '12h'
             }
           );
@@ -196,9 +197,14 @@ exports.authUser = async (req, res, next) => {
           delete objResponse.sucursal_id;
           delete objResponse.reset_token;
           delete objResponse.reset_token_expiration;
+          let hoy = new Date();
+          let desface = Math.abs((hoy.getTimezoneOffset())/-60) * 3600000;
+          let token_expires = (Date.now() - desface) + 43200000;
+          const today = new Date(token_expires);
           return res.status(200).json({
             message: "Inicio de sesión exitoso",
             token: token,
+            token_expires_in: today/* .toUTCString() */,
             data: objResponse
           });
         }
